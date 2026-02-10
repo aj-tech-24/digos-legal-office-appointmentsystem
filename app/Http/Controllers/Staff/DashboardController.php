@@ -106,7 +106,13 @@ class DashboardController extends Controller
      */
     public function showAppointment(Appointment $appointment)
     {
-        $appointment->load(['clientRecord', 'lawyer.user', 'aiRecommendation']);
+        $appointment->load([
+            'clientRecord.entries' => function ($q) use ($appointment) {
+                $q->where('appointment_id', $appointment->id)->with('creator')->orderBy('created_at', 'desc');
+            },
+            'lawyer.user',
+            'aiRecommendation',
+        ]);
 
         return view('staff.appointments.show', compact('appointment'));
     }

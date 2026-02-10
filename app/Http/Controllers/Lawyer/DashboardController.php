@@ -106,7 +106,12 @@ class DashboardController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        $appointment->load(['clientRecord', 'aiRecommendation.items']);
+        $appointment->load([
+            'clientRecord.entries' => function ($q) use ($appointment) {
+                $q->where('appointment_id', $appointment->id)->with('creator')->orderBy('created_at', 'desc');
+            },
+            'aiRecommendation.items',
+        ]);
 
         return view('lawyer.appointments.show', compact('appointment'));
     }

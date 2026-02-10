@@ -3,16 +3,14 @@
 namespace App\Mail;
 
 use App\Models\Appointment;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AppointmentConfirmation extends Mailable implements ShouldQueue
+class AppointmentConfirmation extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     /**
      * Create a new message instance.
@@ -36,12 +34,35 @@ class AppointmentConfirmation extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+        $appointment = $this->appointment;
+
+        // Pre-compute services
+        $services = [];
+        if ($appointment->detected_services) {
+            if (isset($appointment->detected_services['primary'])) {
+                $services[] = $appointment->detected_services['primary'];
+            }
+            if (isset($appointment->detected_services['secondary']) && $appointment->detected_services['secondary']) {
+                $services[] = $appointment->detected_services['secondary'];
+            }
+        }
+
+        // Pre-compute document checklist
+        $documents = [];
+        if ($appointment->document_checklist && count($appointment->document_checklist) > 0) {
+            foreach ($appointment->document_checklist as $document) {
+                $documents[] = is_array($document) ? ($document['item'] ?? 'Document') : $document;
+            }
+        }
+
         return new Content(
-            markdown: 'emails.appointment-confirmation',
+            view: 'emails.appointment-confirmation',
             with: [
-                'appointment' => $this->appointment,
-                'clientRecord' => $this->appointment->clientRecord,
-                'lawyer' => $this->appointment->lawyer,
+                'appointment' => $appointment,
+                'clientRecord' => $appointment->clientRecord,
+                'lawyer' => $appointment->lawyer,
+                'services' => $services,
+                'documents' => $documents,
             ],
         );
     }

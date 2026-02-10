@@ -117,7 +117,7 @@ class AppointmentController extends Controller
     {
         $appointment->load([
             'clientRecord.entries' => function ($q) use ($appointment) {
-                $q->where('appointment_id', $appointment->id)->orWhereNull('appointment_id');
+                $q->where('appointment_id', $appointment->id)->with('creator')->orderBy('created_at', 'desc');
             },
             'lawyer.user',
             'lawyer.specializations',
@@ -125,7 +125,30 @@ class AppointmentController extends Controller
         ]);
 
         return view('admin.appointments.show', compact('appointment'));
-    }    /**
+    }
+
+    /**
+     * Add a note to an appointment
+     */
+    public function addNote(Request $request, Appointment $appointment)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
+
+        $appointment->clientRecord->entries()->create([
+            'appointment_id' => $appointment->id,
+            'created_by' => auth()->id(),
+            'entry_type' => 'case_note',
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+        ]);
+
+        return back()->with('success', 'Note added successfully.');
+    }
+
+    /**
      * Confirm an appointment
      */
     public function confirm(Appointment $appointment)

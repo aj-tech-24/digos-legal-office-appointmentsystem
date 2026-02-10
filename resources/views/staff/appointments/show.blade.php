@@ -160,6 +160,50 @@
                 </div>
             </div>
             @endif
+
+            <!-- Notes & Activity -->
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text me-2"></i> Notes & Activity</h5>
+                    <span class="badge bg-secondary">{{ $appointment->clientRecord->entries->count() }}</span>
+                </div>
+                <div class="card-body">
+                    @if($appointment->clientRecord->entries->count() > 0)
+                        <div class="notes-list">
+                            @foreach($appointment->clientRecord->entries as $entry)
+                                <div class="d-flex mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                    <div class="me-3 flex-shrink-0">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-{{ $entry->type_color }} bg-opacity-10" 
+                                             style="width: 40px; height: 40px;">
+                                            <i class="bi {{ $entry->type_icon }} text-{{ $entry->type_color }}"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="mb-1">{{ $entry->title }}</h6>
+                                                <span class="badge bg-{{ $entry->type_color }} bg-opacity-10 text-{{ $entry->type_color }} mb-1">
+                                                    {{ $entry->type_label }}
+                                                </span>
+                                            </div>
+                                            <small class="text-muted text-nowrap ms-2">{{ $entry->created_at->format('M j, g:i A') }}</small>
+                                        </div>
+                                        <p class="mb-1 text-muted" style="white-space: pre-wrap;">{{ $entry->content }}</p>
+                                        @if($entry->creator)
+                                            <small class="text-muted"><i class="bi bi-person me-1"></i>{{ $entry->creator->name }}</small>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-journal-text fs-3 d-block mb-2"></i>
+                            <p class="mb-0">No notes for this appointment.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar -->

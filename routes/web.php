@@ -72,6 +72,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::post('appointments/{appointment}/complete', [AdminAppointmentController::class, 'complete'])->name('appointments.complete');
     Route::post('appointments/{appointment}/no-show', [AdminAppointmentController::class, 'noShow'])->name('appointments.noShow');
     Route::post('appointments/{appointment}/check-in', [AdminAppointmentController::class, 'checkIn'])->name('appointments.checkIn');
+    Route::post('appointments/{appointment}/note', [AdminAppointmentController::class, 'addNote'])->name('appointments.addNote');
     
     // Client Records
     Route::get('clients', [AdminClientRecordController::class, 'index'])->name('clients.index');

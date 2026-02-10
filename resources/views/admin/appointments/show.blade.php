@@ -102,6 +102,28 @@
             </div>
         </div>
         
+        <!-- Add Note -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-journal-text me-2"></i>Add Note
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.appointments.addNote', $appointment) }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Title</label>
+                        <input type="text" class="form-control" name="title" required placeholder="Brief description...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Note Content</label>
+                        <textarea class="form-control" name="content" rows="3" required placeholder="Add your note here..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i> Add Note
+                    </button>
+                </form>
+            </div>
+        </div>
 
     </div>
     
@@ -157,77 +179,45 @@
             </div>
         </div>
         
-        <!-- Timeline -->
+        <!-- Notes & Activity -->
         <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-clock-history me-2"></i>Status Timeline
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-journal-text me-2"></i>Notes & Activity</span>
+                <span class="badge bg-secondary">{{ $appointment->clientRecord->entries->count() }}</span>
             </div>
             <div class="card-body">
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-marker bg-success"></div>
-                        <div class="timeline-content">
-                            <p class="mb-0"><strong>Created</strong></p>
-                            <small class="text-muted">{{ $appointment->created_at->format('M j, Y g:i A') }}</small>
-                        </div>
+                @if($appointment->clientRecord->entries->count() > 0)
+                    <div class="notes-list">
+                        @foreach($appointment->clientRecord->entries as $entry)
+                            <div class="d-flex mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                <div class="me-2 flex-shrink-0">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-{{ $entry->type_color }} bg-opacity-10" 
+                                         style="width: 32px; height: 32px;">
+                                        <i class="bi {{ $entry->type_icon }} text-{{ $entry->type_color }} small"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 min-width-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h6 class="mb-0 small fw-bold text-truncate">{{ $entry->title }}</h6>
+                                        <small class="text-muted text-nowrap ms-2" style="font-size: 0.7rem;">{{ $entry->created_at->format('M j, g:i A') }}</small>
+                                    </div>
+                                    <span class="badge bg-{{ $entry->type_color }} bg-opacity-10 text-{{ $entry->type_color }} mb-1" style="font-size: 0.65rem;">
+                                        {{ $entry->type_label }}
+                                    </span>
+                                    <p class="mb-1 text-muted small" style="white-space: pre-wrap;">{{ $entry->content }}</p>
+                                    @if($entry->creator)
+                                        <small class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-person me-1"></i>{{ $entry->creator->name }}</small>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                    
-                    @if($appointment->confirmed_at)
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-info"></div>
-                            <div class="timeline-content">
-                                <p class="mb-0"><strong>Confirmed</strong></p>
-                                <small class="text-muted">{{ $appointment->confirmed_at->format('M j, Y g:i A') }}</small>
-                            </div>
-                        </div>
-                    @endif
-                    
-                    @if($appointment->checked_in_at)
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-primary"></div>
-                            <div class="timeline-content">
-                                <p class="mb-0"><strong>Checked In</strong></p>
-                                <small class="text-muted">{{ $appointment->checked_in_at->format('M j, Y g:i A') }}</small>
-                                @if($appointment->queue_number)
-                                    <br><small>Queue #{{ $appointment->queue_number }}</small>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-                    
-                    @if($appointment->started_at)
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-primary"></div>
-                            <div class="timeline-content">
-                                <p class="mb-0"><strong>Started</strong></p>
-                                <small class="text-muted">{{ $appointment->started_at->format('M j, Y g:i A') }}</small>
-                            </div>
-                        </div>
-                    @endif
-                    
-                    @if($appointment->completed_at)
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-success"></div>
-                            <div class="timeline-content">
-                                <p class="mb-0"><strong>Completed</strong></p>
-                                <small class="text-muted">{{ $appointment->completed_at->format('M j, Y g:i A') }}</small>
-                            </div>
-                        </div>
-                    @endif
-                    
-                    @if($appointment->cancelled_at)
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-danger"></div>
-                            <div class="timeline-content">
-                                <p class="mb-0"><strong>Cancelled</strong></p>
-                                <small class="text-muted">{{ $appointment->cancelled_at->format('M j, Y g:i A') }}</small>
-                                @if($appointment->cancellation_reason)
-                                    <br><small>{{ $appointment->cancellation_reason }}</small>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-                </div>
+                @else
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
+                        <p class="mb-0 small">No notes yet.</p>
+                    </div>
+                @endif
             </div>
         </div>
         
@@ -280,40 +270,4 @@
     </div>
 </div>
 
-@push('styles')
-<style>
-    .timeline {
-        position: relative;
-        padding-left: 30px;
-    }
-    
-    .timeline-item {
-        position: relative;
-        padding-bottom: 1rem;
-    }
-    
-    .timeline-item:before {
-        content: '';
-        position: absolute;
-        left: -24px;
-        top: 8px;
-        bottom: -8px;
-        width: 2px;
-        background-color: #dee2e6;
-    }
-    
-    .timeline-item:last-child:before {
-        display: none;
-    }
-    
-    .timeline-marker {
-        position: absolute;
-        left: -30px;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        top: 4px;
-    }
-</style>
-@endpush
 @endsection
