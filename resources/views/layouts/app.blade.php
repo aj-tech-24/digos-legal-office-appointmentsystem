@@ -239,7 +239,7 @@
                         <a class="nav-link" href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-gov-yellow" href="/login">Staff Login</a>
+                        <a class="nav-link text-gov-yellow" href="/login">Login</a>
                     </li>
                 </ul>
             </div>

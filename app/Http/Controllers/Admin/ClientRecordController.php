@@ -8,19 +8,14 @@ use Illuminate\Http\Request;
 
 class ClientRecordController extends Controller
 {
-    /**
-     * Display a listing of client records
-     */
     public function index(Request $request)
     {
         $query = ClientRecord::withCount('appointments');
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Search
         if ($request->filled('search')) {
             $query->search($request->search);
         }
@@ -30,19 +25,14 @@ class ClientRecordController extends Controller
         return view('admin.clients.index', compact('clients'));
     }
 
-    /**
-     * Display a printable summary of client records
-     */
     public function summary(Request $request)
     {
         $query = ClientRecord::withCount('appointments');
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Search
         if ($request->filled('search')) {
             $query->search($request->search);
         }
@@ -52,9 +42,6 @@ class ClientRecordController extends Controller
         return view('admin.clients.summary', compact('clients'));
     }
 
-    /**
-     * Display the specified client record with timeline
-     */
     public function show(ClientRecord $clientRecord)
     {
         $clientRecord->load([
@@ -70,9 +57,6 @@ class ClientRecordController extends Controller
         return view('admin.clients.show', compact('clientRecord'));
     }
 
-    /**
-     * Display a printable view of a single client record
-     */
     public function print(ClientRecord $clientRecord)
     {
         $clientRecord->load([
@@ -87,9 +71,6 @@ class ClientRecordController extends Controller
         return view('admin.clients.print', compact('clientRecord'));
     }
 
-    /**
-     * Add a case note to client record
-     */
     public function addNote(Request $request, ClientRecord $clientRecord)
     {
         $validated = $request->validate([
@@ -109,9 +90,6 @@ class ClientRecordController extends Controller
         return back()->with('success', 'Note added successfully.');
     }
 
-    /**
-     * Update client record status
-     */
     public function updateStatus(Request $request, ClientRecord $clientRecord)
     {
         $validated = $request->validate([
@@ -121,7 +99,6 @@ class ClientRecordController extends Controller
         $oldStatus = $clientRecord->status;
         $clientRecord->update(['status' => $validated['status']]);
 
-        // Create timeline entry
         $clientRecord->entries()->create([
             'created_by' => auth()->id(),
             'entry_type' => 'status_change',
@@ -132,9 +109,6 @@ class ClientRecordController extends Controller
         return back()->with('success', 'Client status updated.');
     }
 
-    /**
-     * Edit client information
-     */
     public function update(Request $request, ClientRecord $clientRecord)
     {
         $validated = $request->validate([

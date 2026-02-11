@@ -25,7 +25,7 @@
                     <a href="#" class="text-gray-200 hover:text-white transition-all-smooth hover:scale-105">Home</a>
                     <a href="#services" class="text-gray-200 hover:text-white transition-all-smooth hover:scale-105">Services</a>
                     <a href="#process" class="text-gray-200 hover:text-white transition-all-smooth hover:scale-105">How it Works</a>
-                    <a href="{{ route('login') }}" class="text-gov-yellow hover:text-yellow-400 font-medium transition-all-smooth hover:scale-105">Staff Login</a>
+                    <a href="{{ route('login') }}" class="text-gov-yellow hover:text-yellow-400 font-medium transition-all-smooth hover:scale-105">Login</a>
                 </div>
                 <div class="md:hidden">
                     <!-- Mobile menu button can go here -->

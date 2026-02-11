@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-1">Client Records</h1>
-            <p class="text-muted mb-0">Manage client profiles and case history</p>
+            <p class="text-muted mb-0">Manage client profiles and client history</p>
         </div>
     </div>
 
@@ -20,7 +20,7 @@
                     <label class="form-label">Search</label>
                     <input type="text" class="form-control" name="search" 
                         value="{{ request('search') }}" 
-                        placeholder="Name, email, phone, or case number...">
+                        placeholder="Name, email, phone, or reference...">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Status</label>
@@ -68,7 +68,7 @@
                         <tr>
                             <th>Client</th>
                             <th>Contact</th>
-                            <th>Case Number</th>
+                            <th>Reference</th>
                             <th>Appointments</th>
                             <th>Status</th>
                             <th>Created</th>
@@ -97,8 +97,8 @@
                                 @endif
                             </td>
                             <td>
-                                @if($client->case_number)
-                                    <code class="bg-light text-dark px-2 py-1 rounded">{{ $client->case_number }}</code>
+                                @if($client->reference_number)
+                                    <code class="bg-light text-dark px-2 py-1 rounded">{{ $client->reference_number }}</code>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif

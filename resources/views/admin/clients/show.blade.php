@@ -248,7 +248,7 @@
             <form action="{{ route('admin.clients.addNote', $clientRecord) }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Case Note</h5>
+                    <h5 class="modal-title">Add Note</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -328,9 +328,9 @@
                         <textarea class="form-control" name="address" rows="2">{{ $clientRecord->address }}</textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Case Number</label>
-                        <input type="text" class="form-control" name="case_number" 
-                               value="{{ $clientRecord->case_number }}">
+                        <label class="form-label">Reference</label>
+                        <input type="text" class="form-control" name="reference_number" 
+                               value="{{ $clientRecord->reference_number }}">
                     </div>
                 </div>
                 <div class="modal-footer">

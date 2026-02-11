@@ -186,9 +186,6 @@ class DashboardController extends Controller
         return back()->with('success', 'Schedule updated successfully.');
     }
 
-    /**
-     * Add case note to an appointment
-     */
     public function addNote(Request $request, Appointment $appointment)
     {
         $lawyer = auth()->user()->lawyer;

@@ -69,71 +69,97 @@
 </div>
 
 <script>
+{
     const dateInput = document.getElementById('appointment_date');
     const timeSlotsContainer = document.getElementById('time-slots-container');
     const appointmentTimeInput = document.getElementById('appointment_time');
     const continueBtn = document.getElementById('continue-btn');
     const lawyerId = {{ $lawyerId ?? 'null' }};
-    
-    dateInput.addEventListener('change', async function() {
-        if (!this.value || !lawyerId) return;
-        
-        timeSlotsContainer.innerHTML = `
-            <div class="text-center py-3">
-                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                <span class="ms-2">Loading available slots...</span>
-            </div>
-        `;
-          try {
-            const res = await fetch(`/book/time-slots?lawyer_id=${lawyerId}&date=${this.value}&session_id=${sessionId}`, {
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken()
-                },
-                credentials: 'same-origin'
-            });
+    const sessionId = typeof window.sessionId !== 'undefined' ? window.sessionId : '{{ session()->getId() }}';
+
+    window.selectTimeSlot = function(element, value) {
+        document.querySelectorAll('.time-slot').forEach(btn => {
+            btn.classList.remove('btn-primary', 'text-white');
+            btn.classList.add('btn-outline-secondary');
+        });
+
+        element.classList.remove('btn-outline-secondary');
+        element.classList.add('btn-primary', 'text-white');
+
+        if(appointmentTimeInput) {
+            appointmentTimeInput.value = value;
+        }
+
+        if(continueBtn) {
+            continueBtn.disabled = false;
+        }
+    };
+
+    if(dateInput) {
+        dateInput.addEventListener('change', async function() {
+            if (!this.value || !lawyerId) return;
             
-            const data = await res.json();
+            timeSlotsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Checking lawyer's availability...</p>
+                </div>
+            `;
             
-            if (data.success && data.slots.length > 0) {
-                let html = '<div class="row g-2">';
-                data.slots.forEach(slot => {
-                    html += `
-                        <div class="col-6 col-md-4">
-                            <div class="time-slot btn btn-outline-secondary w-100 py-2" 
-                                 data-value="${slot.value}" onclick="selectTimeSlot(this, '${slot.value}')">
-                                ${slot.display}
+            continueBtn.disabled = true;
+
+            try {
+                const url = `/book/time-slots?lawyer_id=${lawyerId}&date=${this.value}`;
+                
+                const res = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                
+                if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+                const data = await res.json();
+                
+                if (data.success && data.slots && data.slots.length > 0) {
+                    let html = '<div class="row g-2">';
+                    data.slots.forEach(slot => {
+                        html += `
+                            <div class="col-6 col-md-4">
+                                <button type="button" class="time-slot btn btn-outline-secondary w-100 py-2 mb-2" 
+                                      onclick="selectTimeSlot(this, '${slot.value}')">
+                                    <i class="bi bi-clock me-1"></i> ${slot.display}
+                                </button>
                             </div>
+                        `;
+                    });
+                    html += '</div>';
+                    
+                    if (data.duration) {
+                        html += `<div class="alert alert-light border mt-3 small"><i class="bi bi-info-circle me-1"></i>Duration: ${data.duration} mins</div>`;
+                    }
+                    
+                    timeSlotsContainer.innerHTML = html;
+                } else {
+                    timeSlotsContainer.innerHTML = `
+                        <div class="alert alert-warning text-center">
+                            <i class="bi bi-calendar-x d-block fs-2 mb-2"></i>
+                            No available slots for this date.
                         </div>
                     `;
-                });
-                html += '</div>';
-                
-                if (data.duration) {
-                    html += `<p class="text-muted small mt-3"><i class="bi bi-info-circle me-1"></i>Each slot is ${data.duration} minutes based on your case complexity.</p>`;
                 }
                 
-                timeSlotsContainer.innerHTML = html;
-            } else {
+            } catch (error) {
+                console.error('Error fetching slots:', error);
                 timeSlotsContainer.innerHTML = `
-                    <div class="alert alert-warning">
+                    <div class="alert alert-danger">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        ${data.message || 'No available time slots for this date. Please select another date.'}
+                        Could not load time slots. (${error.message})
                     </div>
                 `;
             }
-              // Reset selection
-            appointmentTimeInput.value = '';
-            continueBtn.disabled = true;
-            
-        } catch (error) {
-            console.error('Error:', error);
-            timeSlotsContainer.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-circle me-2"></i>
-                    Failed to load time slots. Please try again.
-                </div>
-            `;
-        }
-    });
+        });
+    }
+}
 </script>
