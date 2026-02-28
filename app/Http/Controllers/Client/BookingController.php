@@ -60,7 +60,9 @@ class BookingController extends Controller
             'draft' => $draft,
             'sessionId' => $sessionId,
         ]);
-    }/**
+    }
+
+    /**
      * Process step submission
      */
     public function processStep(Request $request, int $step): JsonResponse
@@ -148,14 +150,16 @@ class BookingController extends Controller
     protected function processStep2(Request $request, BookingDraft $draft): array
     {
         $validator = Validator::make($request->all(), [
-            'narrative' => 'required|min:50|max:5000',
+            'narrative' => 'required|min:30|max:5000',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
+            'address' => 'required|string|max:255', // Added validation
         ], [
             'narrative.required' => 'Please describe your legal concern.',
-            'narrative.min' => 'Please provide more details (at least 50 characters).',
+            'narrative.min' => 'Please provide more details (at least 30 characters).',
+            'address.required' => 'Please provide your barangay or address.',
         ]);
 
         if ($validator->fails()) {
@@ -172,6 +176,7 @@ class BookingController extends Controller
             'last_name' => $request->last_name,
             'email' => $request->email,
             'phone' => $request->phone,
+            'address' => $request->address, // Store address
             'ai_recommendation_id' => $recommendation->id,
         ]);
 
@@ -292,7 +297,13 @@ class BookingController extends Controller
             'first_name' => $state['first_name'],
             'last_name' => $state['last_name'],
             'phone' => $state['phone'] ?? null,
+            'address' => $state['address'] ?? null, // Ensure address is passed
         ]);
+
+        // Update address if it exists but wasn't set or changed
+        if (!empty($state['address'])) {
+            $clientRecord->update(['address' => $state['address']]);
+        }
 
         // Get AI recommendation
         $recommendation = \App\Models\AiRecommendation::find($state['ai_recommendation_id']);
@@ -451,12 +462,7 @@ class BookingController extends Controller
         $sessionId = $request->input('session_id');
         $draft = $sessionId ? BookingDraft::where('session_id', $sessionId)->first() : null;
         $duration = 60; // default
-
-        if ($draft && isset($draft->draft_state['ai_recommendation_id'])) {
-            $recommendation = \App\Models\AiRecommendation::find($draft->draft_state['ai_recommendation_id']);
-            $duration = $recommendation?->estimated_duration_minutes ?? 60;
-        }
-
+        
         // Generate time slots
         $slots = $this->generateTimeSlots($lawyer, $date, $schedule, $duration);
 
@@ -513,4 +519,40 @@ class BookingController extends Controller
 
         return $slots;
     }
+
+    /**
+     * Get disabled dates based on lawyer unavailability
+     */
+    public function getDisabledDates(Request $request)
+    {
+        try {
+            // 1. Gamita ang saktong Session Key
+            $sessionId = session('booking_session_id');
+
+            if (!$sessionId) {
+                return response()->json([]);
+            }
+
+            $draft = BookingDraft::where('session_id', $sessionId)->first();
+            
+            // 2. Kuhaa ang lawyer_id gikan sa 'draft_state' (JSON)
+            if (!$draft || empty($draft->draft_state['lawyer_id'])) {
+                return response()->json([]);
+            }
+
+            $lawyerId = $draft->draft_state['lawyer_id'];
+
+            // 3. I-query ang unavailable dates
+            $blocked = \App\Models\lawyerUnavailability::where('lawyer_id', $lawyerId)
+                        ->pluck('unavailable_date')
+                        ->toArray();
+
+            return response()->json($blocked);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Calendar Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server Error'], 500);
+        }
+    }
+    
 }

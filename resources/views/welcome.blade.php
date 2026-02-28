@@ -49,11 +49,11 @@
                     🏛️ Official Appointment System
                 </span>
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6 animate-slide-up">
-                    Legal Services Made <span class="text-gov-yellow">Accessible</span> to Every Digoseño
+                    <span class="text-gov-yellow">Serving the People</span> Convenient Legal Booking for Digoseños
                 </h1>
                 <p class="text-lg text-gray-300 mb-8 leading-relaxed max-w-xl animate-slide-up" style="animation-delay: 0.1s;">
-                    Schedule your free legal consultation with our expert city lawyers. 
-                    Simple, fast, and secure appointment booking.
+                    Schedule your legal consultations online with the City Legal Office of Digos. 
+                    Book appointments, choose services, and get timely assistance from our legal team, all in one platform.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 animate-slide-up" style="animation-delay: 0.2s;">
                     <a href="{{ route('book.index') }}" 
@@ -97,8 +97,8 @@
                         <div class="w-14 h-14 gradient-navy-blue rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-all-smooth shadow-glow-blue">
                             <svg class="w-8 h-8 text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-gov-navy transition-colors">Drafting of Documents</h3>
-                        <p class="text-gray-600">Assistance in preparing affidavits, contracts, deeds, and other legal instruments.</p>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-gov-navy transition-colors">Notarial Services</h3>
+                        <p class="text-gray-600">Authentication of affidavits, sworn statements, Special Power of Attorney (SPA), and other legal instruments.</p>
                     </div>
                 </div>
 
@@ -108,8 +108,8 @@
                         <div class="w-14 h-14 gradient-navy-blue rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-all-smooth shadow-glow-blue">
                             <svg class="w-8 h-8 text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-gov-navy transition-colors">Oath Administration</h3>
-                        <p class="text-gray-600">Administration of oaths for official documents and statements required by law.</p>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-gov-navy transition-colors">Preparation of Affidavits</h3>
+                        <p class="text-gray-600">Assistance in drafting sworn statements for employment, scholarship, and other official purposes.</p>
                     </div>
                 </div>
             </div>

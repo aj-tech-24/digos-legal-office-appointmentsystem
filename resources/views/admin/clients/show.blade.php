@@ -253,10 +253,6 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Title <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="title" required placeholder="Brief description...">
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label">Note Content <span class="text-danger">*</span></label>
                         <textarea class="form-control" name="content" rows="4" required placeholder="Detailed notes..."></textarea>
                     </div>

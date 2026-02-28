@@ -36,7 +36,7 @@ class AppointmentApproved extends Mailable
     {
         $appointment = $this->appointment;
 
-        // Pre-compute services
+        // Services Logic
         $services = [];
         if ($appointment->detected_services) {
             if (isset($appointment->detected_services['primary'])) {
@@ -47,11 +47,18 @@ class AppointmentApproved extends Mailable
             }
         }
 
-        // Pre-compute document checklist
-        $documents = [];
-        if ($appointment->document_checklist && count($appointment->document_checklist) > 0) {
-            foreach ($appointment->document_checklist as $document) {
-                $documents[] = is_array($document) ? ($document['item'] ?? 'Document') : $document;
+        // Logic para sa Documents (Checklist)
+        // Check if admin_notes has the list (from the controller confirmation)
+        $documentsArray = [];
+        if (!empty($appointment->admin_notes)) {
+            // Split per line
+            $documentsArray = array_filter(explode("\n", $appointment->admin_notes));
+        } else {
+            // Fallback sa AI checklist if admin notes are empty
+            if ($appointment->document_checklist && count($appointment->document_checklist) > 0) {
+                foreach ($appointment->document_checklist as $document) {
+                    $documentsArray[] = is_array($document) ? ($document['item'] ?? 'Document') : $document;
+                }
             }
         }
 
@@ -62,7 +69,7 @@ class AppointmentApproved extends Mailable
                 'clientRecord' => $appointment->clientRecord,
                 'lawyer' => $appointment->lawyer,
                 'services' => $services,
-                'documents' => $documents,
+                'documents' => $documentsArray, // Gamiton ni sa @foreach sa Blade
             ],
         );
     }

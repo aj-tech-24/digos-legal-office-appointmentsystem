@@ -11,7 +11,6 @@
                     Our AI has analyzed your case. Please review the results below.
                 </div>
                 
-                <!-- Professional Summary -->
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Case Summary</h5>
@@ -22,7 +21,6 @@
                 </div>
                 
                 <div class="row mb-4">
-                    <!-- Detected Services -->
                     <div class="col-md-6 mb-3 mb-md-0">
                         <div class="card h-100">
                             <div class="card-header">
@@ -52,7 +50,6 @@
                         </div>
                     </div>
                     
-                    <!-- Complexity & Duration -->
                     <div class="col-md-6">
                         <div class="card h-100">
                             <div class="card-header">
@@ -68,9 +65,9 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="fs-4 fw-bold text-primary">
-                                            {{ $recommendation->estimated_duration_minutes }} mins
+                                            60 mins
                                         </div>
-                                        <div class="text-muted small">Est. Duration</div>
+                                        <div class="text-muted small">Standard Duration</div>
                                     </div>
                                 </div>
                             </div>
@@ -78,41 +75,10 @@
                     </div>
                 </div>
                 
-                <!-- Document Checklist -->
-                @if(!empty($recommendation->document_checklist))
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Recommended Documents to Prepare</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted mb-3">Please prepare the following documents for your consultation:</p>
-                        
-                        @foreach($recommendation->document_checklist as $doc)
-                        <div class="checklist-item {{ ($doc['required'] ?? false) ? 'required' : 'optional' }}">
-                            <div class="d-flex align-items-start">
-                                <i class="bi {{ ($doc['required'] ?? false) ? 'bi-exclamation-circle text-danger' : 'bi-circle text-muted' }} me-3 mt-1"></i>
-                                <div>
-                                    <strong>{{ $doc['item'] ?? $doc }}</strong>
-                                    @if($doc['required'] ?? false)
-                                        <span class="badge bg-danger ms-2">Required</span>
-                                    @else
-                                        <span class="badge bg-secondary ms-2">Optional</span>
-                                    @endif
-                                    @if(!empty($doc['description']))
-                                        <p class="text-muted mb-0 small mt-1">{{ $doc['description'] }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-                
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle me-2"></i>
                     <strong>How is this analysis generated?</strong><br>
-                    Our AI analyzes your narrative to identify the type of legal service you need, estimate complexity based on the details provided, and suggest relevant documents. This helps us match you with the most suitable lawyer.
+                    Our AI analyzes your narrative to identify the type of legal service you need and estimate complexity. This helps us match you with the most suitable lawyer.
                 </div>
                 
                 <form id="step3-form">

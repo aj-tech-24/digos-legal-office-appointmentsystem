@@ -3,92 +3,75 @@
 @section('title', 'Staff Dashboard')
 
 @section('content')
-<div class="container-fluid">
-    <!-- Welcome Header -->
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">Staff Dashboard</h1>
-            <p class="text-muted mb-0">Today's appointments and queue management</p>
+            <h1 class="h3 text-gray-800 mb-0">Staff Dashboard</h1>
+            <p class="text-muted small mb-0">{{ now()->format('l, F j, Y') }}</p>
         </div>
         <div>
-            <a href="{{ route('staff.queue') }}" class="btn btn-primary">
-                <i class="bi bi-people me-2"></i>Open Queue
+            <a href="{{ route('staff.queue') }}" class="btn btn-primary shadow-sm">
+                <i class="bi bi-list-ol me-2"></i>Manage Queue
             </a>
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-lg mb-3 mb-lg-0">
-            <div class="card stat-card purple h-100">
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Today's Total</h6>
-                            <h2 class="mb-0">{{ $stats['today_total'] }}</h2>
+                            <div class="text-uppercase fw-bold text-muted small mb-1">Total Appointments</div>
+                            <div class="h3 mb-0 fw-bold">{{ $stats['today_total'] }}</div>
                         </div>
-                        <div class="text-purple opacity-50">
-                            <i class="bi bi-calendar-day fs-1"></i>
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                            <i class="bi bi-calendar-event fs-4"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg mb-3 mb-lg-0">
-            <div class="card stat-card primary h-100">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Upcoming</h6>
-                            <h2 class="mb-0">{{ $stats['upcoming_total'] }}</h2>
+                            <div class="text-uppercase fw-bold text-warning small mb-1">Pending Requests</div>
+                            <div class="h3 mb-0 fw-bold">{{ $stats['pending_requests'] }}</div>
                         </div>
-                        <div class="text-primary opacity-50">
-                            <i class="bi bi-calendar-range fs-1"></i>
+                        <div class="icon-circle bg-warning bg-opacity-10 text-warning p-3 rounded-circle">
+                            <i class="bi bi-hourglass-split fs-4"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg mb-3 mb-lg-0">
-            <div class="card stat-card success h-100">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Checked In</h6>
-                            <h2 class="mb-0">{{ $stats['checked_in'] }}</h2>
+                            <div class="text-uppercase fw-bold text-info small mb-1">Waiting Check-in</div>
+                            <div class="h3 mb-0 fw-bold">{{ $stats['waiting_checkin'] }}</div>
                         </div>
-                        <div class="text-success opacity-50">
-                            <i class="bi bi-check-circle fs-1"></i>
+                        <div class="icon-circle bg-info bg-opacity-10 text-info p-3 rounded-circle">
+                            <i class="bi bi-person-check fs-4"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg mb-3 mb-lg-0">
-            <div class="card stat-card warning h-100">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Waiting</h6>
-                            <h2 class="mb-0">{{ $stats['waiting'] }}</h2>
+                            <div class="text-uppercase fw-bold text-success small mb-1">In Session</div>
+                            <div class="h3 mb-0 fw-bold">{{ $stats['in_session'] }}</div>
                         </div>
-                        <div class="text-warning opacity-50">
-                            <i class="bi bi-hourglass-split fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg">
-            <div class="card stat-card info h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Pending Confirmation</h6>
-                            <h2 class="mb-0">{{ $stats['pending_confirmation'] }}</h2>
-                        </div>
-                        <div class="text-info opacity-50">
-                            <i class="bi bi-clock fs-1"></i>
+                        <div class="icon-circle bg-success bg-opacity-10 text-success p-3 rounded-circle">
+                            <i class="bi bi-broadcast fs-4"></i>
                         </div>
                     </div>
                 </div>
@@ -96,215 +79,134 @@
         </div>
     </div>
 
-    <!-- Today's Appointments -->
-    <div class="card mb-4">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="bi bi-calendar-check me-2"></i>
-                Today's Appointments
-                <span class="badge bg-primary ms-2">{{ now()->format('l, F j, Y') }}</span>
-            </h5>
-            <a href="{{ route('staff.appointments.index') }}" class="btn btn-sm btn-outline-primary">
-                View All
-            </a>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-table me-2"></i>Today's Schedule
+            </h6>
+            
+            <form action="{{ route('staff.dashboard') }}" method="GET" class="d-flex gap-2">
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Search name...">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width: 140px;">
+                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                    <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Session</option>
+                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                </select>
+            </form>
         </div>
 
-        @if($todaysAppointments->isEmpty())
-            <div class="card-body text-center py-5">
-                <i class="bi bi-calendar-x display-4 text-muted mb-3 d-block"></i>
-                <h5 class="text-muted">No Appointments Today</h5>
-                <p class="text-muted mb-0">There are no scheduled appointments for today.</p>
-            </div>
-        @else
+        <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead class="bg-light">
                         <tr>
+                            <th class="ps-4">Time</th>
+                            <th>Client Info</th>
+                            <th>Assigned Lawyer</th>
+                            <th>Status</th>
                             <th>Queue</th>
-                            <th>Time</th>
-                            <th>Client</th>
-                            <th>Lawyer</th>
-                            <th>Status</th>
-                            <th width="150">Actions</th>
+                            <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($todaysAppointments as $appointment)
-                        <tr>
-                            <td>
-                                @if($appointment->queue_number)
-                                    <span class="badge bg-primary fs-6">#{{ $appointment->queue_number }}</span>
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
-                            </td>
-                            <td>
-                                <strong>{{ $appointment->start_datetime->format('g:i A') }}</strong>
-                                <br>
-                                <small class="text-muted">{{ $appointment->estimated_duration_minutes ?? 30 }} mins</small>
-                            </td>
-                            <td>
-                                <strong>{{ $appointment->clientRecord->full_name }}</strong>
-                                @if($appointment->clientRecord->phone)
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="bi bi-telephone"></i> {{ $appointment->clientRecord->phone }}
-                                    </small>
-                                @endif
-                            </td>
-                            <td>
-                                {{ $appointment->lawyer->user->name ?? 'Not assigned' }}
-                            </td>
-                            <td>
-                                <span class="badge bg-{{ $appointment->status_color }}">
-                                    {{ ucfirst(str_replace('_', ' ', $appointment->status)) }}
-                                </span>
-                                @if($appointment->checked_in_at)
-                                    <br>
-                                    <small class="text-success">
-                                        <i class="bi bi-check"></i> Checked in {{ $appointment->checked_in_at->format('g:i A') }}
-                                    </small>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    @if($appointment->status === 'pending')
-                                        <form action="{{ route('staff.appointments.confirm', $appointment) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success" title="Confirm">
-                                                <i class="bi bi-check-lg"></i>
-                                            </button>
-                                        </form>
+                        @forelse($todaysAppointments as $apt)
+                            @php
+                                $statusColor = match($apt->status) {
+                                    'pending' => 'warning',
+                                    'confirmed' => 'primary',
+                                    'in_progress' => 'info',
+                                    'completed' => 'success',
+                                    'cancelled' => 'danger',
+                                    default => 'secondary',
+                                };
+                            @endphp
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">{{ \Carbon\Carbon::parse($apt->start_datetime)->format('g:i A') }}</div>
+                                    <small class="text-muted">{{ $apt->estimated_duration_minutes ?? 30 }} mins</small>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">{{ $apt->clientRecord->full_name }}</div>
+                                    <small class="text-muted">{{ $apt->reference_number }}</small>
+                                </td>
+                                <td>
+                                    @if($apt->lawyer && $apt->lawyer->user)
+                                        <span class="d-inline-flex align-items-center">
+                                            <i class="bi bi-person-badge me-1 text-muted"></i> {{ $apt->lawyer->user->name }}
+                                        </span>
+                                    @else
+                                        <span class="text-danger small fst-italic"><i class="bi bi-exclamation-circle"></i> Unassigned</span>
                                     @endif
-                                    
-                                    @if($appointment->status === 'confirmed' && !$appointment->checked_in_at)
-                                        <form action="{{ route('staff.appointments.checkIn', $appointment) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-primary" title="Check In">
-                                                <i class="bi bi-box-arrow-in-right"></i>
-                                            </button>
-                                        </form>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ $statusColor }} bg-opacity-10 text-{{ $statusColor }} px-2 py-1">
+                                        {{ ucfirst(str_replace('_', ' ', $apt->status)) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($apt->queue_number)
+                                        <span class="badge bg-dark rounded-pill shadow-sm">#{{ $apt->queue_number }}</span>
+                                    @else
+                                        <span class="text-muted small">-</span>
                                     @endif
-                                    
-                                    <a href="{{ route('staff.appointments.show', $appointment) }}" 
-                                       class="btn btn-outline-secondary" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('staff.appointments.show', $apt->id) }}">
+                                                    <i class="bi bi-eye me-2 text-secondary"></i>View Details
+                                                </a>
+                                            </li>
+
+                                            {{-- DYNAMIC ACTIONS BASED ON STATUS --}}
+                                            @if($apt->status === 'pending')
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form action="{{ route('staff.appointments.confirm', $apt->id) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="dropdown-item text-success">
+                                                            <i class="bi bi-check-circle me-2"></i>Confirm Appointment
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            @endif
+
+                                            @if($apt->status === 'confirmed' && !$apt->checked_in_at)
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form action="{{ route('staff.appointments.checkIn', $apt->id) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="dropdown-item text-primary fw-bold">
+                                                            <i class="bi bi-box-arrow-in-right me-2"></i>Check In Client
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="text-muted mb-2"><i class="bi bi-calendar-x display-4"></i></div>
+                                    <p class="h6 text-muted">No appointments found.</p>
+                                    @if(request('status') || request('search'))
+                                        <a href="{{ route('staff.dashboard') }}" class="btn btn-sm btn-outline-primary mt-2">Clear Filters</a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-        @endif
-    </div>
-
-    <!-- Upcoming Appointments (Today + Future) -->
-    <div class="card">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="bi bi-calendar-range me-2"></i>
-                Upcoming Appointments
-                <span class="badge bg-info ms-2">{{ $upcomingAppointments->count() }} total</span>
-            </h5>
-            <a href="{{ route('staff.appointments.index') }}" class="btn btn-sm btn-outline-primary">
-                View All
-            </a>
         </div>
-
-        @if($upcomingAppointments->isEmpty())
-            <div class="card-body text-center py-5">
-                <i class="bi bi-calendar-x display-4 text-muted mb-3 d-block"></i>
-                <h5 class="text-muted">No Upcoming Appointments</h5>
-                <p class="text-muted mb-0">There are no upcoming appointments scheduled.</p>
-            </div>
-        @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Client</th>
-                            <th>Lawyer</th>
-                            <th>Status</th>
-                            <th width="150">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($upcomingAppointments as $appointment)
-                        <tr>
-                            <td>
-                                <strong>{{ $appointment->start_datetime->format('M d, Y') }}</strong>
-                                <br>
-                                <small class="text-muted">{{ $appointment->start_datetime->format('l') }}</small>
-                                @if($appointment->start_datetime->isToday())
-                                    <br><span class="badge bg-success">Today</span>
-                                @elseif($appointment->start_datetime->isTomorrow())
-                                    <br><span class="badge bg-info">Tomorrow</span>
-                                @endif
-                            </td>
-                            <td>
-                                <strong>{{ $appointment->start_datetime->format('g:i A') }}</strong>
-                                <br>
-                                <small class="text-muted">{{ $appointment->estimated_duration_minutes ?? 30 }} mins</small>
-                            </td>
-                            <td>
-                                <strong>{{ $appointment->clientRecord->full_name }}</strong>
-                                @if($appointment->clientRecord->phone)
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="bi bi-telephone"></i> {{ $appointment->clientRecord->phone }}
-                                    </small>
-                                @endif
-                            </td>
-                            <td>
-                                {{ $appointment->lawyer->user->name ?? 'Not assigned' }}
-                            </td>
-                            <td>
-                                <span class="badge bg-{{ $appointment->status_color }}">
-                                    {{ ucfirst(str_replace('_', ' ', $appointment->status)) }}
-                                </span>
-                                @if($appointment->checked_in_at)
-                                    <br>
-                                    <small class="text-success">
-                                        <i class="bi bi-check"></i> Checked in {{ $appointment->checked_in_at->format('g:i A') }}
-                                    </small>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    @if($appointment->status === 'pending')
-                                        <form action="{{ route('staff.appointments.confirm', $appointment) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success" title="Confirm">
-                                                <i class="bi bi-check-lg"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                    
-                                    @if($appointment->status === 'confirmed' && !$appointment->checked_in_at)
-                                        <form action="{{ route('staff.appointments.checkIn', $appointment) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-primary" title="Check In">
-                                                <i class="bi bi-box-arrow-in-right"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                    
-                                    <a href="{{ route('staff.appointments.show', $appointment) }}" 
-                                       class="btn btn-outline-secondary" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
     </div>
 </div>
 @endsection

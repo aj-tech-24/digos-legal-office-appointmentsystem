@@ -60,7 +60,7 @@
                         <li>You will receive an acknowledgment email at <strong>{{ $clientRecord->email }}</strong></li>
                         <li>Your appointment request will be reviewed by our staff or assigned lawyer</li>
                         <li>Once approved, you will receive a <strong>confirmation email</strong> with final details</li>
-                        <li>If approved, please arrive 15 minutes before your scheduled time</li>
+                        <li>If approved, please arrive 10 minutes before your scheduled time</li>
                         <li>Don't forget to bring the required documents</li>
                     </ol>
                 </div>

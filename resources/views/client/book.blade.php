@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 @extends('layouts.app')
 
 @section('title', 'Book an Appointment - Digos City Legal Office')
@@ -43,7 +45,8 @@
 <script>
     let currentStep = {{ $draft->current_step ?? 1 }};
     const sessionId = '{{ $sessionId }}';
-    
+    let datePickerInstance = null;
+
     // Function to execute inline scripts from dynamically loaded HTML
     function executeInlineScripts(container) {
         const scripts = container.querySelectorAll('script');
@@ -104,6 +107,12 @@
                 executeInlineScripts(document.getElementById('step-container'));
                 updateStepIndicator(data.step);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // TRIGGER PARA SA DFA CALENDAR INIG ABOT SA STEP 5
+                if (data.step === 5) {
+                    initDfaCalendar();
+                }
+
             } else {
                 if (data.errors) {
                     showErrors(data.errors);
@@ -118,6 +127,32 @@
             hideLoading();
         }
     }
+
+    function initDfaCalendar() {
+    const dateInput = document.getElementById('appointment_date');
+    if (!dateInput) return;
+
+    fetch('/booking/disabled-dates')
+        .then(res => {
+            if (!res.ok) throw new Error('Server Error');
+            return res.json();
+        })
+        .then(blockedDates => {
+            flatpickr("#appointment_date", {
+                minDate: "today",
+                maxDate: new Date().fp_incr(30),
+                disable: blockedDates,
+                dateFormat: "Y-m-d", // Kani ang mo-solve sa 422 error
+                onChange: function(selectedDates, dateStr) {
+                    if (typeof fetchTimeSlots === 'function') {
+                        fetchTimeSlots(dateStr);
+                    }
+                }
+            });
+        })
+        .catch(err => console.error('Error loading dates:', err));
+}
+
       async function goBack(step) {
         showLoading('Going back...');
         

@@ -127,32 +127,8 @@ class Lawyer extends Model
             ->count();
     }
 
-    /**
-     * Check availability for a specific datetime range
-     */
-    public function isAvailable(\DateTime $start, \DateTime $end): bool
+    public function unavailabilities(): HasMany
     {
-        // Check if within schedule
-        $dayOfWeek = $start->format('w');
-        $schedule = $this->schedules()->where('day_of_week', $dayOfWeek)->first();
-        
-        if (!$schedule || !$schedule->is_available) {
-            return false;
-        }
-
-        // Check for conflicting appointments
-        $conflicting = $this->appointments()
-            ->where('status', '!=', 'cancelled')
-            ->where(function ($query) use ($start, $end) {
-                $query->whereBetween('start_datetime', [$start, $end])
-                    ->orWhereBetween('end_datetime', [$start, $end])
-                    ->orWhere(function ($q) use ($start, $end) {
-                        $q->where('start_datetime', '<=', $start)
-                            ->where('end_datetime', '>=', $end);
-                    });
-            })
-            ->exists();
-
-        return !$conflicting;
+        return $this->hasMany(LawyerUnavailability::class);
     }
 }

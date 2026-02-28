@@ -21,7 +21,7 @@
                          style="width: 100px; height: 100px; font-size: 2.5rem;">
                         {{ strtoupper(substr($lawyer->user->name, 0, 2)) }}
                     </div>
-                    <h4 class="mb-1">Atty. {{ $lawyer->user->name }}</h4>
+                    <h4 class="mb-1">{{ $lawyer->user->name }}</h4>
                     <p class="text-muted mb-3">{{ $lawyer->user->email }}</p>
                     
                     <span class="badge bg-success fs-6 mb-3">

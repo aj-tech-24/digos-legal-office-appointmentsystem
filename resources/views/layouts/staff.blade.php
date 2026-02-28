@@ -11,7 +11,7 @@
         :root {
             --sidebar-width: 260px;
             --header-height: 60px;
-            --primary-color: #6f42c1;
+            --primary-color: #6f42c1; /* Purple for Staff */
         }
 
         body {
@@ -19,6 +19,7 @@
             background-color: #f8f9fa;
         }
 
+        /* Sidebar Styling */
         .sidebar {
             position: fixed;
             top: 0;
@@ -27,17 +28,23 @@
             height: 100vh;
             background: linear-gradient(135deg, var(--primary-color) 0%, #5a32a3 100%);
             color: white;
-            z-index: 1000;
+            z-index: 1040; /* Corrected Z-index */
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
+            transition: transform 0.3s ease;
         }
 
         .sidebar-header {
             padding: 1rem;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
         }
 
         .sidebar-nav {
             padding: 1rem 0;
+            flex-grow: 1;
+            overflow-y: auto;
         }
 
         .sidebar-nav .nav-link {
@@ -45,6 +52,8 @@
             padding: 0.75rem 1rem;
             border-radius: 0;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
         }
 
         .sidebar-nav .nav-link:hover {
@@ -63,9 +72,12 @@
             margin-right: 10px;
         }
 
+        /* Main Content & Header */
         .main-content {
             margin-left: var(--sidebar-width);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .top-header {
@@ -77,13 +89,15 @@
             padding: 0 1.5rem;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 999; /* Lower than sidebar/modal */
         }
 
         .content-area {
             padding: 1.5rem;
+            flex-grow: 1;
         }
 
+        /* Cards */
         .card {
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
             border: none;
@@ -92,23 +106,22 @@
         .stat-card {
             border-left: 4px solid var(--primary-color);
         }
-
-        .stat-card.primary { border-left-color: #0d6efd; }
-        .stat-card.success { border-left-color: #198754; }
-        .stat-card.warning { border-left-color: #ffc107; }
-        .stat-card.info { border-left-color: #0dcaf0; }
-        .stat-card.purple { border-left-color: #6f42c1; }
+        
+        /* Modal Fixes */
+        .modal-backdrop {
+            z-index: 1050;
+        }
+        .modal {
+            z-index: 1055;
+        }
 
         @media (max-width: 991px) {
             .sidebar {
                 transform: translateX(-100%);
-                transition: transform 0.3s ease;
             }
-
             .sidebar.show {
                 transform: translateX(0);
             }
-
             .main-content {
                 margin-left: 0;
             }
@@ -117,7 +130,6 @@
     @stack('styles')
 </head>
 <body>
-    <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-header">
             <div class="d-flex align-items-center">
@@ -163,13 +175,17 @@
                     <small class="d-block">{{ auth()->user()->name }}</small>
                     <small class="opacity-75">Staff</small>
                 </div>
+                <form action="{{ route('logout') }}" method="POST" class="d-inline ms-2">
+                    @csrf
+                    <button type="submit" class="btn btn-link text-white p-0" title="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Header -->
         <header class="top-header">
             <button class="btn btn-link d-lg-none me-3 p-0" id="sidebarToggle">
                 <i class="bi bi-list fs-4"></i>
@@ -200,7 +216,6 @@
             </div>
         </header>
 
-        <!-- Content Area -->
         <main class="content-area">
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -226,6 +241,15 @@
     <script>
         document.getElementById('sidebarToggle')?.addEventListener('click', function() {
             document.querySelector('.sidebar').classList.toggle('show');
+        });
+
+        // FIX: Ensure Modals appear on top of everything by moving them to body
+        // This is the secret to fixing the "Modal not clickable" issue
+        document.addEventListener('DOMContentLoaded', function () {
+            var modals = document.querySelectorAll('.modal');
+            modals.forEach(function (modal) {
+                document.body.appendChild(modal);
+            });
         });
     </script>
     @stack('scripts')

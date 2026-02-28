@@ -18,15 +18,14 @@ class ClientRecordEntry extends Model
         'title',
         'content',
         'metadata',
+        'linked_booking_date', 
     ];
 
     protected $casts = [
         'metadata' => 'array',
+        'linked_booking_date' => 'date', 
     ];
 
-    /**
-     * Entry type labels for display
-     */
     public const TYPE_LABELS = [
         'appointment_created' => 'Appointment Created',
         'appointment_confirmed' => 'Appointment Confirmed',
@@ -39,9 +38,6 @@ class ClientRecordEntry extends Model
         'status_change' => 'Status Changed',
     ];
 
-    /**
-     * Entry type icons (Bootstrap Icons)
-     */
     public const TYPE_ICONS = [
         'appointment_created' => 'bi-calendar-plus',
         'appointment_confirmed' => 'bi-calendar-check',
@@ -54,9 +50,6 @@ class ClientRecordEntry extends Model
         'status_change' => 'bi-arrow-repeat',
     ];
 
-    /**
-     * Entry type colors (Bootstrap)
-     */
     public const TYPE_COLORS = [
         'appointment_created' => 'primary',
         'appointment_confirmed' => 'info',
@@ -70,49 +63,31 @@ class ClientRecordEntry extends Model
         'status_change' => 'dark',
     ];
 
-    /**
-     * Get the client record.
-     */
     public function clientRecord(): BelongsTo
     {
         return $this->belongsTo(ClientRecord::class);
     }
 
-    /**
-     * Get the appointment.
-     */
     public function appointment(): BelongsTo
     {
         return $this->belongsTo(Appointment::class);
     }
 
-    /**
-     * Get the user who created this entry.
-     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /**
-     * Get the label for the entry type
-     */
     public function getTypeLabelAttribute(): string
     {
         return self::TYPE_LABELS[$this->entry_type] ?? $this->entry_type;
     }
 
-    /**
-     * Get the icon for the entry type
-     */
     public function getTypeIconAttribute(): string
     {
         return self::TYPE_ICONS[$this->entry_type] ?? 'bi-circle';
     }
 
-    /**
-     * Get the color for the entry type
-     */
     public function getTypeColorAttribute(): string
     {
         return self::TYPE_COLORS[$this->entry_type] ?? 'secondary';

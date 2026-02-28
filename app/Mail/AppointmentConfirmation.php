@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Appointment;
+use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -10,13 +11,16 @@ use Illuminate\Queue\SerializesModels;
 
 class AppointmentConfirmation extends Mailable
 {
-    use SerializesModels;
+    use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
+     * Accepts Appointment data, Instructions text, and Requirements array.
      */
     public function __construct(
-        public Appointment $appointment
+        public Appointment $appointment,
+        public ?string $instructions = null,
+        public array $requirements = []
     ) {}
 
     /**
@@ -25,7 +29,7 @@ class AppointmentConfirmation extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Appointment Request Received - ' . $this->appointment->reference_number,
+            subject: 'Appointment Confirmed - ' . $this->appointment->reference_number,
         );
     }
 
@@ -34,43 +38,31 @@ class AppointmentConfirmation extends Mailable
      */
     public function content(): Content
     {
-        $appointment = $this->appointment;
-
-        // Pre-compute services
+        // Pre-compute services (Just in case you need to display them in the email)
         $services = [];
-        if ($appointment->detected_services) {
-            if (isset($appointment->detected_services['primary'])) {
-                $services[] = $appointment->detected_services['primary'];
+        if ($this->appointment->detected_services) {
+            if (isset($this->appointment->detected_services['primary'])) {
+                $services[] = $this->appointment->detected_services['primary'];
             }
-            if (isset($appointment->detected_services['secondary']) && $appointment->detected_services['secondary']) {
-                $services[] = $appointment->detected_services['secondary'];
-            }
-        }
-
-        // Pre-compute document checklist
-        $documents = [];
-        if ($appointment->document_checklist && count($appointment->document_checklist) > 0) {
-            foreach ($appointment->document_checklist as $document) {
-                $documents[] = is_array($document) ? ($document['item'] ?? 'Document') : $document;
+            if (isset($this->appointment->detected_services['secondary']) && $this->appointment->detected_services['secondary']) {
+                $services[] = $this->appointment->detected_services['secondary'];
             }
         }
 
+        // Return the view with all necessary data
         return new Content(
             view: 'emails.appointment-confirmation',
             with: [
-                'appointment' => $appointment,
-                'clientRecord' => $appointment->clientRecord,
-                'lawyer' => $appointment->lawyer,
-                'services' => $services,
-                'documents' => $documents,
+                'appointment'  => $this->appointment,
+                'instructions' => $this->instructions,
+                'requirements' => $this->requirements,
+                'services'     => $services,
             ],
         );
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {

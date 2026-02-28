@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         // Seed roles and permissions first
         $this->call(RoleAndPermissionSeeder::class);
         
-        // Seed specializations
+        // Seed specializationsexit
         $this->call(SpecializationSeeder::class);
         
         // Create admin user

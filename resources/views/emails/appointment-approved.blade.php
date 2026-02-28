@@ -6,17 +6,13 @@
     <title>Appointment Confirmed</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f0f4f8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-    <!-- Outer wrapper -->
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0f4f8;">
         <tr>
             <td align="center" style="padding: 40px 20px;">
-                <!-- Main card -->
                 <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
 
-                    <!-- Header with gradient -->
                     <tr>
                         <td style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #0ea5e9 100%); padding: 40px 40px 30px 40px; text-align: center;">
-                            <!-- Checkmark icon -->
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
                                 <tr>
                                     <td style="background-color: rgba(255,255,255,0.2); border-radius: 50%; width: 72px; height: 72px; text-align: center; vertical-align: middle;">
@@ -29,7 +25,6 @@
                         </td>
                     </tr>
 
-                    <!-- Greeting -->
                     <tr>
                         <td style="padding: 32px 40px 0 40px;">
                             <p style="color: #334155; font-size: 16px; line-height: 1.6; margin: 0;">
@@ -41,7 +36,6 @@
                         </td>
                     </tr>
 
-                    <!-- Reference Number Banner -->
                     <tr>
                         <td style="padding: 24px 40px 0 40px;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -55,18 +49,15 @@
                         </td>
                     </tr>
 
-                    <!-- Appointment Details Card -->
                     <tr>
                         <td style="padding: 24px 40px 0 40px;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
-                                <!-- Section header -->
                                 <tr>
                                     <td style="background-color: #1e40af; padding: 12px 20px;">
                                         <p style="color: #ffffff; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0;">📋 Appointment Details</p>
                                     </td>
                                 </tr>
 
-                                <!-- Date -->
                                 <tr>
                                     <td style="padding: 16px 20px 0 20px;">
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -83,7 +74,6 @@
                                     </td>
                                 </tr>
 
-                                <!-- Time -->
                                 <tr>
                                     <td style="padding: 14px 20px 0 20px;">
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -100,7 +90,6 @@
                                     </td>
                                 </tr>
 
-                                <!-- Duration -->
                                 <tr>
                                     <td style="padding: 14px 20px 0 20px;">
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -117,7 +106,6 @@
                                     </td>
                                 </tr>
 
-                                <!-- Lawyer -->
                                 <tr>
                                     <td style="padding: 14px 20px 0 20px;">
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -127,14 +115,13 @@
                                                 </td>
                                                 <td valign="top">
                                                     <p style="color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Assigned Lawyer</p>
-                                                    <p style="color: #1e293b; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">Atty. {{ $lawyer->user->name ?? 'To be assigned' }}</p>
+                                                    <p style="color: #1e293b; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">{{ $lawyer->user->name ?? 'To be assigned' }}</p>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
 
-                                <!-- Services (if any) -->
                                 @if(count($services) > 0)
                                 <tr>
                                     <td style="padding: 14px 20px 0 20px;">
@@ -153,7 +140,6 @@
                                 </tr>
                                 @endif
 
-                                <!-- Status Badge -->
                                 <tr>
                                     <td style="padding: 16px 20px 20px 20px;">
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -179,7 +165,6 @@
                         </td>
                     </tr>
 
-                    <!-- Documents to Bring -->
                     <tr>
                         <td style="padding: 24px 40px 0 40px;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #fffbeb; border-radius: 12px; border: 1px solid #fde68a; overflow: hidden;">
@@ -231,7 +216,6 @@
                         </td>
                     </tr>
 
-                    <!-- Important Reminders -->
                     <tr>
                         <td style="padding: 24px 40px 0 40px;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #eff6ff; border-radius: 12px; border: 1px solid #bfdbfe; overflow: hidden;">
@@ -242,18 +226,16 @@
                                 </tr>
                                 <tr>
                                     <td style="padding: 16px 20px 20px 20px;">
-                                        <!-- Reminder 1 -->
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 10px;">
                                             <tr>
                                                 <td width="28" valign="top" style="padding-top: 2px;">
                                                     <span style="display: inline-block; width: 20px; height: 20px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; text-align: center; line-height: 20px; font-size: 11px; color: #fff; font-weight: 700;">1</span>
                                                 </td>
                                                 <td>
-                                                    <p style="color: #1e40af; font-size: 14px; margin: 0; line-height: 1.5;">Please arrive at least <strong>15 minutes</strong> before your scheduled time.</p>
+                                                    <p style="color: #1e40af; font-size: 14px; margin: 0; line-height: 1.5;">Please arrive at least <strong>10 minutes</strong> before your scheduled time.</p>
                                                 </td>
                                             </tr>
                                         </table>
-                                        <!-- Reminder 2 -->
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 10px;">
                                             <tr>
                                                 <td width="28" valign="top" style="padding-top: 2px;">
@@ -264,7 +246,6 @@
                                                 </td>
                                             </tr>
                                         </table>
-                                        <!-- Reminder 3 -->
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td width="28" valign="top" style="padding-top: 2px;">
@@ -281,7 +262,6 @@
                         </td>
                     </tr>
 
-                    <!-- Location Card -->
                     <tr>
                         <td style="padding: 24px 40px 0 40px;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0fdf4; border-radius: 12px; border: 1px solid #bbf7d0; overflow: hidden;">
@@ -300,7 +280,6 @@
                         </td>
                     </tr>
 
-                    <!-- Contact & Closing -->
                     <tr>
                         <td style="padding: 32px 40px 0 40px;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top: 1px solid #e2e8f0; padding-top: 24px;">
@@ -318,7 +297,6 @@
                         </td>
                     </tr>
 
-                    <!-- Footer -->
                     <tr>
                         <td style="padding: 32px 40px 40px 40px;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius: 12px; padding: 24px; text-align: center;">

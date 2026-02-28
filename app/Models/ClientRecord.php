@@ -11,16 +11,17 @@ class ClientRecord extends Model
     use HasFactory;
 
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'email',
-        'phone',
-        'address',
-        'date_of_birth',
-        'gender',
-        'status',
-        'notes',
-    ];
+    'first_name',
+    'last_name',
+    'email',
+    'phone',
+    'address',
+    'barangay', // <-- ADD THIS
+    'date_of_birth',
+    'gender',
+    'status',
+    'notes',
+];
 
     protected $casts = [
         'date_of_birth' => 'date',

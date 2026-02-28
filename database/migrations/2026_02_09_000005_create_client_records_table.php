@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
+            $table->string('barangay')->nullable(); // Added for Digos System
             $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->enum('status', ['active', 'closed', 'archived'])->default('active');

@@ -3,224 +3,113 @@
 @section('title', 'Queue Management')
 
 @section('content')
-<div class="container-fluid">
-    <!-- Page Header -->
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">Queue Management</h1>
-            <p class="text-muted mb-0">Today's check-in queue - {{ now()->format('l, F j, Y') }}</p>
+            <h2 class="h3 mb-0 text-gray-800">Queue Management</h2>
+            <p class="text-muted small">Manage client flow for {{ now()->format('F j, Y') }}</p>
         </div>
+        <a href="{{ route('staff.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
     </div>
 
-    <div class="row">
-        <!-- Waiting to Check In -->
-        <div class="col-lg-5 mb-4">
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock me-2"></i>
-                        Waiting to Check In ({{ $waitingToCheckIn->count() }})
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-bottom border-primary border-3">
+                    <h5 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-clock me-2"></i>Waiting for Arrival
                     </h5>
                 </div>
-                
-                @if($waitingToCheckIn->isEmpty())
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-check-circle display-4 text-success mb-3 d-block"></i>
-                        <h6 class="text-muted">No clients waiting to check in today</h6>
-                    </div>
-                @else
+                <div class="card-body p-0">
                     <div class="list-group list-group-flush">
-                        @foreach($waitingToCheckIn as $appointment)
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ $appointment->clientRecord->full_name }}</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="bi bi-clock me-1"></i>
-                                        Scheduled: {{ $appointment->start_datetime->format('g:i A') }}
-                                    </small>
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="bi bi-person me-1"></i>
-                                        Atty. {{ $appointment->lawyer->user->name ?? 'Not assigned' }}
-                                    </small>
+                        @forelse($waitingToCheckIn as $apt)
+                            <div class="list-group-item p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">{{ $apt->clientRecord->full_name }}</div>
+                                        <div class="small text-muted">
+                                            <i class="bi bi-clock me-1"></i>{{ \Carbon\Carbon::parse($apt->start_datetime)->format('g:i A') }}
+                                            <span class="mx-1">•</span> {{ $apt->lawyer->user->name ?? 'Unassigned' }}
+                                        </div>
+                                    </div>
+                                    <form action="{{ route('staff.appointments.checkIn', $apt->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3">
+                                            Check In <i class="bi bi-arrow-right ms-1"></i>
+                                        </button>
+                                    </form>
                                 </div>
-                                <form action="{{ route('staff.appointments.checkIn', $appointment) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-box-arrow-in-right me-1"></i> Check In
-                                    </button>
-                                </form>
                             </div>
-                        </div>
-                        @endforeach
+                        @empty
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-check-all fs-1 mb-2"></i>
+                                <p>No expected clients pending arrival.</p>
+                            </div>
+                        @endforelse
                     </div>
-                @endif
+                </div>
             </div>
         </div>
 
-        <!-- Active Queue -->
-        <div class="col-lg-7 mb-4">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-people me-2"></i>
-                        Active Queue ({{ $appointments->count() }})
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-bottom border-success border-3">
+                    <h5 class="m-0 font-weight-bold text-success">
+                        <i class="bi bi-list-ol me-2"></i>Active Queue
                     </h5>
                 </div>
-                
-                @if($appointments->isEmpty())
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-inbox display-4 text-muted mb-3 d-block"></i>
-                        <h6 class="text-muted">No clients in queue</h6>
-                        <p class="text-muted small">Clients will appear here after checking in</p>
-                    </div>
-                @else
+                <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
+                            <thead class="bg-light">
                                 <tr>
-                                    <th width="80">Queue #</th>
+                                    <th class="ps-4">Queue #</th>
                                     <th>Client</th>
                                     <th>Lawyer</th>
-                                    <th>Checked In</th>
                                     <th>Status</th>
+                                    <th class="text-end pe-4">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($appointments as $appointment)
-                                <tr class="{{ $appointment->status === 'in_progress' ? 'table-primary' : '' }}">
-                                    <td>
-                                        <span class="badge bg-primary fs-5">#{{ $appointment->queue_number }}</span>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $appointment->clientRecord->full_name }}</strong>
-                                        @if($appointment->clientRecord->phone)
-                                            <br>
-                                            <small class="text-muted">{{ $appointment->clientRecord->phone }}</small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        Atty. {{ $appointment->lawyer->user->name ?? 'Not assigned' }}
-                                    </td>
-                                    <td>
-                                        {{ $appointment->checked_in_at->format('g:i A') }}
-                                        <br>
-                                        <small class="text-muted">
-                                            {{ $appointment->checked_in_at->diffForHumans() }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        @if($appointment->status === 'in_progress')
-                                            <span class="badge bg-primary">
-                                                <i class="bi bi-play-fill me-1"></i> In Progress
-                                            </span>
-                                        @else
-                                            <span class="badge bg-warning text-dark">
-                                                <i class="bi bi-hourglass me-1"></i> Waiting
-                                            </span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
+                                @forelse($appointments as $apt)
+                                    <tr class="{{ $apt->status === 'in_progress' ? 'table-success' : '' }}">
+                                        <td class="ps-4">
+                                            <span class="badge bg-dark fs-6 rounded-pill">#{{ $apt->queue_number }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold">{{ $apt->clientRecord->full_name }}</div>
+                                            <small class="text-muted">Arrived: {{ \Carbon\Carbon::parse($apt->checked_in_at)->format('g:i A') }}</small>
+                                        </td>
+                                        <td>{{ $apt->lawyer->user->name ?? 'N/A' }}</td>
+                                        <td>
+                                            @if($apt->status === 'in_progress')
+                                                <span class="badge bg-success bg-opacity-25 text-success animate-pulse">In Session</span>
+                                            @else
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary">Waiting</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <a href="{{ route('staff.appointments.show', $apt->id) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <i class="bi bi-people fs-1 mb-2"></i>
+                                            <p>Queue is currently empty.</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
-                @endif
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Upcoming Appointments -->
-    @if($upcomingAppointments->count() > 0)
-    <div class="card">
-        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="bi bi-calendar-range me-2"></i>
-                Upcoming Appointments ({{ $upcomingAppointments->count() }})
-            </h5>
-            <a href="{{ route('staff.appointments.index') }}" class="btn btn-sm btn-light">
-                View All
-            </a>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Client</th>
-                        <th>Lawyer</th>
-                        <th>Status</th>
-                        <th width="150">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($upcomingAppointments as $appointment)
-                    <tr>
-                        <td>
-                            <strong>{{ $appointment->start_datetime->format('M d, Y') }}</strong>
-                            <br>
-                            <small class="text-muted">{{ $appointment->start_datetime->format('l') }}</small>
-                            @if($appointment->start_datetime->isTomorrow())
-                                <br><span class="badge bg-info">Tomorrow</span>
-                            @endif
-                        </td>
-                        <td>
-                            <strong>{{ $appointment->start_datetime->format('g:i A') }}</strong>
-                            <br>
-                            <small class="text-muted">{{ $appointment->estimated_duration_minutes ?? 30 }} mins</small>
-                        </td>
-                        <td>
-                            <strong>{{ $appointment->clientRecord->full_name }}</strong>
-                            @if($appointment->clientRecord->phone)
-                                <br>
-                                <small class="text-muted">
-                                    <i class="bi bi-telephone"></i> {{ $appointment->clientRecord->phone }}
-                                </small>
-                            @endif
-                        </td>
-                        <td>
-                            Atty. {{ $appointment->lawyer->user->name ?? 'Not assigned' }}
-                        </td>
-                        <td>
-                            <span class="badge bg-{{ $appointment->status_color }}">
-                                {{ ucfirst(str_replace('_', ' ', $appointment->status)) }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                @if($appointment->status === 'pending')
-                                    <form action="{{ route('staff.appointments.confirm', $appointment) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success" title="Confirm">
-                                            <i class="bi bi-check-lg"></i>
-                                        </button>
-                                    </form>
-                                @endif
-                                
-                                <a href="{{ route('staff.appointments.show', $appointment) }}" 
-                                   class="btn btn-outline-secondary" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-    @endif
 </div>
-
-@push('scripts')
-<script>
-    // Auto-refresh every 30 seconds
-    setTimeout(function() {
-        location.reload();
-    }, 30000);
-</script>
-@endpush
 @endsection

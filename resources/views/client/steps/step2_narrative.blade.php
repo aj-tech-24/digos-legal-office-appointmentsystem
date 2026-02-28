@@ -1,57 +1,69 @@
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card shadow-sm border-0">
             <div class="card-header bg-primary-custom text-white">
                 <h4 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Tell Us About Your Legal Concern</h4>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <p class="text-muted mb-4">
                     Please provide your contact information and describe your legal concern in detail. Our AI system will analyze your case to recommend the most suitable lawyer and estimate the consultation duration.
                 </p>
                 
                 <form id="step2-form">
-                    <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-6 mb-3 mb-md-0">
-                            <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                            <label for="first_name" class="form-label fw-bold">First Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="first_name" name="first_name" 
                                    value="{{ $draft->draft_state['first_name'] ?? '' }}" required>
                         </div>
                         <div class="col-md-6">
-                            <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <label for="last_name" class="form-label fw-bold">Last Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="last_name" name="last_name" 
                                    value="{{ $draft->draft_state['last_name'] ?? '' }}" required>
                         </div>
                     </div>
                     
-                    <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-6 mb-3 mb-md-0">
-                            <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                            <label for="email" class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="email" name="email" 
                                    value="{{ $draft->draft_state['email'] ?? '' }}" required>
                             <div class="form-text">We'll send your appointment confirmation here.</div>
                         </div>
                         <div class="col-md-6">
-                            <label for="phone" class="form-label">Phone Number</label>
+                            <label for="phone" class="form-label fw-bold">Phone Number</label>
                             <input type="tel" class="form-control" id="phone" name="phone" 
                                    value="{{ $draft->draft_state['phone'] ?? '' }}" placeholder="Optional">
                         </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="address" class="form-label fw-bold">Barangay / Address <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="address" name="address" 
+                               value="{{ $draft->draft_state['address'] ?? '' }}" 
+                               placeholder="e.g., Brgy. Zone 1, Digos City" required>
                     </div>
                     
                     <div class="mb-4">
                         <label for="narrative" class="form-label">
                             <strong>Describe Your Legal Concern</strong> <span class="text-danger">*</span>
                         </label>
-                        <textarea class="form-control" id="narrative" name="narrative" rows="8" 
-                                  placeholder="Please describe your legal concern in detail. Include relevant background information, what happened, when it happened, parties involved, and what outcome you are hoping for. The more details you provide, the better we can assist you."
-                                  required minlength="50">{{ $draft->draft_state['narrative'] ?? '' }}</textarea>
-                        <div class="form-text">
-                            <span id="char-count">0</span> characters (minimum 50 required)
+                        
+                        <textarea class="form-control" id="narrative" name="narrative" rows="12" 
+                                  placeholder="Please describe your legal concern in detail. Include relevant background information, what happened, when it happened, parties involved, and what outcome you are hoping for."
+                                  required minlength="30" maxlength="5000">{{ $draft->draft_state['narrative'] ?? '' }}</textarea>
+                        
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="form-text">
+                                <span id="char-count">0</span> characters (minimum 30 required)
+                            </small>
+                            <small class="text-muted">Max 5,000 characters</small>
                         </div>
                     </div>
                     
-                    <div class="alert alert-light border">
-                        <h6 class="alert-heading"><i class="bi bi-lightbulb me-2"></i>Tips for a Better Analysis</h6>
-                        <ul class="mb-0 small">
+                    <div class="alert alert-light border rounded-3 mb-4">
+                        <h6 class="alert-heading fw-bold"><i class="bi bi-lightbulb me-2"></i>Tips for a Better Analysis</h6>
+                        <ul class="mb-0 small text-muted">
                             <li>Be specific about dates, places, and people involved</li>
                             <li>Mention any documents or evidence you have</li>
                             <li>Describe what you've already done to address the issue</li>
@@ -74,13 +86,19 @@
 </div>
 
 <script>
-    // Character counter
+    {
+    // Character counter updated for 30 chars
     const narrative = document.getElementById('narrative');
     const charCount = document.getElementById('char-count');
     
     function updateCharCount() {
-        charCount.textContent = narrative.value.length;
-        if (narrative.value.length < 50) {
+        if (!narrative || !charCount) return; // Safety check
+        
+        const currentLength = narrative.value.length;
+        charCount.textContent = currentLength;
+        
+        // Validation logic: Red if below 30, Green if 30+
+        if (currentLength < 30) {
             charCount.classList.add('text-danger');
             charCount.classList.remove('text-success');
         } else {
@@ -89,6 +107,10 @@
         }
     }
     
-    narrative.addEventListener('input', updateCharCount);
-    updateCharCount();
+    if (narrative) {
+        narrative.addEventListener('input', updateCharCount);
+        // Run immediately to handle existing draft data
+        updateCharCount();
+    }
+}
 </script>

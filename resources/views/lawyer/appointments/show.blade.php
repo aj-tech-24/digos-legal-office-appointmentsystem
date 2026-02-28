@@ -16,12 +16,9 @@
             <h1 class="h3 mb-0">Appointment Details</h1>
         </div>        <div>
             @if($appointment->status === 'pending')
-                <form action="{{ route('lawyer.appointments.confirm', $appointment) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-lg me-1"></i> Confirm Appointment
-                    </button>
-                </form>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmModal-{{ $appointment->id }}">                    <i class="bi bi-check-lg me-1"></i> Confirm Appointment
+                </button>
+
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#declineModal">
                     <i class="bi bi-x-lg me-1"></i> Decline
                 </button>
@@ -169,10 +166,6 @@
                 <div class="card-body">
                     <form action="{{ route('lawyer.appointments.addNote', $appointment) }}" method="POST">
                         @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Title</label>
-                            <input type="text" class="form-control" name="title" required placeholder="Brief description...">
-                        </div>
                         <div class="mb-3">
                             <label class="form-label">Note Content</label>
                             <textarea class="form-control" name="content" rows="3" required placeholder="Detailed notes about the consultation..."></textarea>
@@ -324,6 +317,59 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-check-lg me-1"></i> Complete Consultation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmModal-{{ $appointment->id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ route('lawyer.appointments.confirm', $appointment->id) }}" method="POST">
+                @csrf
+                
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i> 
+                        Making this confirmation will send an email to <strong>{{ $appointment->clientRecord->first_name }}</strong>.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select documents the client needs to bring:</label>
+                        <div class="card p-2 bg-light border">
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" name="requirements[]" value="Valid Government ID" checked>
+                                <label class="form-check-label">Valid Government ID</label>
+                            </div>
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" name="requirements[]" value="Relevant Documents" checked>
+                                <label class="form-check-label">Relevant Documents</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="requirements[]" value="Timeline of Events" checked>
+                                <label class="form-check-label">Timeline of Events</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="instructions" class="form-label fw-bold">Additional Instructions / Notes</label>
+                        <textarea name="instructions" id="instructions" class="form-control" rows="3" placeholder="Type specific instructions here (e.g. Please bring your land title, etc)..."></textarea>
+                        <small class="text-muted">This message will be included in the email.</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i> Confirm & Send Email
                     </button>
                 </div>
             </form>

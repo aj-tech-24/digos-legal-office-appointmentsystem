@@ -1,308 +1,237 @@
 @extends('layouts.staff')
 
-@section('title', 'Appointment Details')
-
 @section('content')
 <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{{ route('staff.appointments.index') }}">Appointments</a></li>
-                    <li class="breadcrumb-item active">{{ $appointment->reference_number }}</li>
-                </ol>
-            </nav>
-            <h1 class="h3 mb-0">Appointment Details</h1>
-        </div>
-        <div>
-            @if($appointment->status === 'pending')
-                <form action="{{ route('staff.appointments.confirm', $appointment) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-lg me-1"></i> Confirm Appointment
-                    </button>
-                </form>
-            @endif
-            
-            @if($appointment->status === 'confirmed' && !$appointment->checked_in_at)
-                <form action="{{ route('staff.appointments.checkIn', $appointment) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-box-arrow-in-right me-1"></i> Check In Client
-                    </button>
-                </form>
-            @endif
-        </div>
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Appointment Details</h1>
+        <a href="{{ route('staff.appointments.index') }}" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to List
+        </a>
     </div>
 
     <div class="row">
-        <!-- Main Details -->
         <div class="col-lg-8">
-            <!-- Status Card -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="badge bg-{{ $appointment->status_color }} fs-6 me-2">
-                                {{ ucfirst(str_replace('_', ' ', $appointment->status)) }}
-                            </span>
-                            <code class="bg-light text-dark px-2 py-1 rounded">{{ $appointment->reference_number }}</code>
-                            @if($appointment->queue_number)
-                                <span class="badge bg-primary ms-2">Queue #{{ $appointment->queue_number }}</span>
-                            @endif
-                        </div>
-                        <div class="text-end">
-                            <strong>{{ $appointment->start_datetime->format('l, F j, Y') }}</strong>
-                            <br>
-                            <span class="text-muted">
-                                {{ $appointment->start_datetime->format('g:i A') }} - 
-                                {{ $appointment->end_datetime->format('g:i A') }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Client Narrative -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-chat-quote me-2"></i> Client's Concern</h5>
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Reference: {{ $appointment->reference_number }}</h6>
+                    <span class="badge badge-{{ $appointment->status_color }} px-3 py-2">{{ $appointment->status_label }}</span>
                 </div>
                 <div class="card-body">
-                    <div class="bg-light rounded p-3" style="white-space: pre-wrap;">{{ $appointment->narrative }}</div>
-                    
-                    @if($appointment->professional_summary)
-                    <hr>
-                    <h6 class="text-muted mb-2"><i class="bi bi-robot me-1"></i> AI Summary</h6>
-                    <p class="mb-0">{{ $appointment->professional_summary }}</p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Services & Complexity -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0"><i class="bi bi-tags me-2"></i> Detected Services</h6>
-                        </div>                        <div class="card-body">
-                            @if($appointment->detected_services)
-                                @if(isset($appointment->detected_services['primary']))
-                                    <span class="badge bg-primary me-1 mb-1">{{ $appointment->detected_services['primary'] }}</span>
-                                @endif
-                                @if(isset($appointment->detected_services['secondary']) && $appointment->detected_services['secondary'])
-                                    <span class="badge bg-secondary me-1 mb-1">{{ $appointment->detected_services['secondary'] }}</span>
-                                @endif
-                            @else
-                                <span class="text-muted">No services detected</span>
-                            @endif
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="small font-weight-bold text-muted">CLIENT INFORMATION</h5>
+                            <p class="h5 text-dark">{{ $appointment->clientRecord->full_name }}</p>
+                            <p class="mb-1"><i class="fas fa-envelope mr-2 text-gray-400"></i> {{ $appointment->clientRecord->email }}</p>
+                            <p class="mb-1"><i class="fas fa-phone mr-2 text-gray-400"></i> {{ $appointment->clientRecord->phone }}</p>
+                            <p><i class="fas fa-map-marker-alt mr-2 text-gray-400"></i> {{ $appointment->clientRecord->address ?? 'No Address Recorded' }}</p>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0"><i class="bi bi-speedometer me-2"></i> Case Details</h6>
+                        <div class="col-md-6">
+                            <h5 class="small font-weight-bold text-muted">APPOINTMENT INFO</h5>
+                            <p class="mb-1"><strong>Date:</strong> {{ $appointment->start_datetime->format('F j, Y') }}</p>
+                            <p class="mb-1"><strong>Time:</strong> {{ $appointment->start_datetime->format('h:i A') }} - {{ $appointment->end_datetime->format('h:i A') }}</p>
+                            <p class="mb-1"><strong>Lawyer:</strong> Atty. {{ $appointment->lawyer->user->name }}</p>
+                            <p><strong>Service:</strong> {{ $appointment->detected_services['primary'] ?? 'General Consultation' }}</p>
                         </div>
-                        <div class="card-body">
-                            <div class="mb-2">
-                                <strong>Complexity:</strong>
-                                @switch($appointment->complexity_level)
-                                    @case('simple')
-                                        <span class="badge bg-success">Simple</span>
-                                        @break
-                                    @case('moderate')
-                                        <span class="badge bg-warning text-dark">Moderate</span>
-                                        @break
-                                    @case('complex')
-                                        <span class="badge bg-danger">Complex</span>
-                                        @break
-                                    @default
-                                        <span class="text-muted">—</span>
-                                @endswitch
-                            </div>
-                            <div>
-                                <strong>Duration:</strong>
-                                {{ $appointment->estimated_duration_minutes ?? 30 }} minutes
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>            <!-- Document Checklist -->
-            @if($appointment->document_checklist && count($appointment->document_checklist) > 0)
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-list-check me-2"></i> Document Checklist</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        @foreach($appointment->document_checklist as $document)
-                        @php
-                            $docName = is_array($document) ? ($document['item'] ?? 'Unknown Document') : $document;
-                            $docRequired = is_array($document) ? ($document['required'] ?? false) : false;
-                            $docDescription = is_array($document) ? ($document['description'] ?? '') : '';
-                        @endphp
-                        <li class="list-group-item d-flex align-items-start">
-                            <i class="bi bi-file-earmark text-muted me-2 mt-1"></i>
-                            <div>
-                                <strong>{{ $docName }}</strong>
-                                @if($docRequired)
-                                    <span class="badge bg-danger ms-1">Required</span>
-                                @endif
-                                @if($docDescription)
-                                    <div class="small text-muted">{{ $docDescription }}</div>
-                                @endif
-                            </div>
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            @endif
-
-            <!-- Notes & Activity -->
-            <div class="card mb-4">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-chat-left-text me-2"></i> Notes & Activity</h5>
-                    <span class="badge bg-secondary">{{ $appointment->clientRecord->entries->count() }}</span>
-                </div>
-                <div class="card-body">
-                    @if($appointment->clientRecord->entries->count() > 0)
-                        <div class="notes-list">
-                            @foreach($appointment->clientRecord->entries as $entry)
-                                <div class="d-flex mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                                    <div class="me-3 flex-shrink-0">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-{{ $entry->type_color }} bg-opacity-10" 
-                                             style="width: 40px; height: 40px;">
-                                            <i class="bi {{ $entry->type_icon }} text-{{ $entry->type_color }}"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h6 class="mb-1">{{ $entry->title }}</h6>
-                                                <span class="badge bg-{{ $entry->type_color }} bg-opacity-10 text-{{ $entry->type_color }} mb-1">
-                                                    {{ $entry->type_label }}
-                                                </span>
-                                            </div>
-                                            <small class="text-muted text-nowrap ms-2">{{ $entry->created_at->format('M j, g:i A') }}</small>
-                                        </div>
-                                        <p class="mb-1 text-muted" style="white-space: pre-wrap;">{{ $entry->content }}</p>
-                                        @if($entry->creator)
-                                            <small class="text-muted"><i class="bi bi-person me-1"></i>{{ $entry->creator->name }}</small>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center text-muted py-3">
-                            <i class="bi bi-journal-text fs-3 d-block mb-2"></i>
-                            <p class="mb-0">No notes for this appointment.</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Client Info -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-person me-2"></i> Client Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
-                             style="width: 60px; height: 60px; font-size: 1.5rem;">
-                            {{ strtoupper(substr($appointment->clientRecord->first_name, 0, 1) . substr($appointment->clientRecord->last_name, 0, 1)) }}
-                        </div>
-                        <h5 class="mt-2 mb-0">{{ $appointment->clientRecord->full_name }}</h5>
                     </div>
 
                     <hr>
 
-                    <dl class="mb-0">
-                        @if($appointment->clientRecord->email)
-                        <dt><i class="bi bi-envelope text-muted me-2"></i>Email</dt>
-                        <dd>{{ $appointment->clientRecord->email }}</dd>
-                        @endif
-
-                        @if($appointment->clientRecord->phone)
-                        <dt><i class="bi bi-telephone text-muted me-2"></i>Phone</dt>
-                        <dd>{{ $appointment->clientRecord->phone }}</dd>
-                        @endif
-
-                        @if($appointment->clientRecord->address)
-                        <dt><i class="bi bi-geo-alt text-muted me-2"></i>Address</dt>
-                        <dd>{{ $appointment->clientRecord->address }}</dd>
-                        @endif
-                    </dl>
-                </div>
-            </div>
-
-            <!-- Lawyer Info -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-person-badge me-2"></i> Assigned Lawyer</h5>
-                </div>
-                <div class="card-body">
-                    @if($appointment->lawyer)
-                        <h6>Atty. {{ $appointment->lawyer->user->name }}</h6>
-                        @if($appointment->lawyer->specializations->count() > 0)
-                            <div class="mb-2">
-                                @foreach($appointment->lawyer->specializations as $spec)
-                                    <span class="badge bg-secondary">{{ $spec->name }}</span>
+                    <div class="mb-4">
+                        <h5 class="small font-weight-bold text-primary">REQUIRED DOCUMENTS (CHECKLIST)</h5>
+                        @if(!empty($appointment->document_checklist) && is_array($appointment->document_checklist))
+                            <ul class="list-group">
+                                @foreach($appointment->document_checklist as $doc)
+                                    <li class="list-group-item py-2">
+                                        <i class="far fa-check-square text-success mr-2"></i> 
+                                        {{ is_array($doc) ? ($doc['item'] ?? 'Requirement') : $doc }}
+                                    </li>
                                 @endforeach
+                            </ul>
+                        @else
+                            <div class="alert alert-secondary text-center small">
+                                No specific document checklist was assigned during confirmation.
                             </div>
                         @endif
-                    @else
-                        <span class="text-muted">Not assigned</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="small font-weight-bold text-muted">CLIENT'S NARRATIVE</h5>
+                        <div class="p-3 bg-light rounded border">
+                            {{ $appointment->narrative }}
+                        </div>
+                    </div>
+
+                    @if($appointment->admin_notes)
+                    <div class="mb-4">
+                        <h5 class="small font-weight-bold text-muted">ADMIN / STAFF NOTES</h5>
+                        <div class="p-3 bg-light rounded border border-left-info">
+                            {!! nl2br(e($appointment->admin_notes)) !!}
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actions</h6>
+                </div>
+                <div class="card-body">
+                    @if($appointment->status === 'pending')
+                        <button class="btn btn-success btn-block mb-2" data-toggle="modal" data-target="#confirmModal">
+                            <i class="fas fa-check"></i> Confirm Appointment
+                        </button>
+                        <button class="btn btn-danger btn-block" data-toggle="modal" data-target="#declineModal">
+                            <i class="fas fa-times"></i> Decline Request
+                        </button>
+
+                    @elseif($appointment->status === 'confirmed')
+                        @if(is_null($appointment->checked_in_at))
+                            <form action="{{ route('staff.appointments.checkIn', $appointment->id) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-primary btn-block mb-3">
+                                    <i class="fas fa-user-check"></i> Check-In Client
+                                </button>
+                            </form>
+                        @else
+                             <div class="alert alert-info text-center">Client Checked In</div>
+                        @endif
+                        
+                        <form action="{{ route('staff.appointments.cancel', $appointment->id) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn btn-outline-danger btn-block btn-sm">Cancel Appointment</button>
+                        </form>
+
+                    @elseif($appointment->status === 'in_progress')
+                        <div class="alert alert-primary text-center">Session In Progress</div>
+                        <form action="{{ route('staff.appointments.complete', $appointment->id) }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn btn-success btn-block">
+                                <i class="fas fa-flag-checkered"></i> Mark Completed
+                            </button>
+                        </form>
+
+                    @elseif($appointment->status === 'completed')
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle"></i> Appointment Completed
+                        </div>
                     @endif
                 </div>
             </div>
 
-            <!-- Timeline -->
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i> Timeline</h6>
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-secondary">Add Case Note</h6>
                 </div>
                 <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-2">
-                            <small class="text-muted">Booked</small><br>
-                            <strong>{{ $appointment->created_at->format('M d, Y g:i A') }}</strong>
-                        </li>
-                        @if($appointment->confirmed_at)
-                        <li class="mb-2">
-                            <small class="text-muted">Confirmed</small><br>
-                            <strong>{{ $appointment->confirmed_at->format('M d, Y g:i A') }}</strong>
-                        </li>
-                        @endif
-                        @if($appointment->checked_in_at)
-                        <li class="mb-2">
-                            <small class="text-success">Checked In</small><br>
-                            <strong>{{ $appointment->checked_in_at->format('M d, Y g:i A') }}</strong>
-                        </li>
-                        @endif
-                        @if($appointment->started_at)
-                        <li class="mb-2">
-                            <small class="text-primary">Started</small><br>
-                            <strong>{{ $appointment->started_at->format('M d, Y g:i A') }}</strong>
-                        </li>
-                        @endif
-                        @if($appointment->completed_at)
-                        <li class="mb-2">
-                            <small class="text-success">Completed</small><br>
-                            <strong>{{ $appointment->completed_at->format('M d, Y g:i A') }}</strong>
-                        </li>
-                        @endif
-                    </ul>
+                    <form action="{{ route('staff.appointments.addNote', $appointment->id) }}" method="POST">
+                        @csrf
+                        <div class="form-group">
+                            <label class="small">Note Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g., Initial Screening" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="small">Link to Booking Date (Optional)</label>
+                            <select name="linked_date" class="form-control form-control-sm">
+                                <option value="">-- General Note --</option>
+                                <option value="{{ $appointment->start_datetime->toDateString() }}" selected>
+                                    Current: {{ $appointment->start_datetime->format('M d, Y') }}
+                                </option>
+                                @foreach($clientHistory as $history)
+                                    @if($history->id !== $appointment->id)
+                                        <option value="{{ $history->start_datetime->toDateString() }}">
+                                            Past: {{ $history->start_datetime->format('M d, Y') }} ({{ $history->reference_number }})
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="small">Content</label>
+                            <textarea name="content" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-secondary btn-block btn-sm">Save Note</button>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+{{-- MODALS --}}
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form action="{{ route('staff.appointments.confirm', $appointment->id) }}" method="POST">
+            @csrf
+            @method('PATCH')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Appointment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Assign Requirements for the client to bring:</p>
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="req1" name="requirements[]" value="Valid ID">
+                            <label class="custom-control-label" for="req1">Valid ID</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="req2" name="requirements[]" value="Proof of Indigency">
+                            <label class="custom-control-label" for="req2">Proof of Indigency</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="req3" name="requirements[]" value="Case Related Documents">
+                            <label class="custom-control-label" for="req3">Case Related Documents</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Instructions</label>
+                        <textarea name="instructions" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success">Confirm & Send Email</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="declineModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form action="{{ route('staff.appointments.decline', $appointment->id) }}" method="POST">
+            @csrf
+            @method('PATCH')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Decline Appointment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Reason for declining <span class="text-danger">*</span></label>
+                        <textarea name="decline_reason" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Decline Appointment</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

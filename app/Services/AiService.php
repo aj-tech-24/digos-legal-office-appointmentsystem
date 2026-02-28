@@ -114,39 +114,60 @@ class AiService
      */
     protected function buildPrompt(string $narrative): string
     {
+        // Kuhaon ang listahan sa services gikan sa database
         $specializations = Specialization::active()->pluck('name')->toArray();
         $specializationList = implode(', ', $specializations);
 
         return <<<PROMPT
-You are a legal case analyzer for the Digos City Legal Office. Analyze the following case narrative and provide a structured response.
+    You are a senior Legal Intake Specialist for a Philippine Law Firm.
+    Your goal is to convert the client's raw narrative (English, Tagalog, or Bisaya/Cebuano) into a **professional, detailed legal summary** in English.
 
-Available legal service categories: {$specializationList}
+    **Context for Translation (Bisaya/Tagalog Keywords):**
+    - "Yuta", "Lupa", "Titulo", "Silingan", "Harass", "Ali" -> **Property Law** (Neighbor Dispute/Land)
+    - "Asawa", "Bana", "Sustento", "Support", "Live-in", "Bun-og" -> **Family Law** (VAWC/Support)
+    - "Utang", "Bayad", "Singil", "Estafa", "Bounce Check" -> **Civil Law** (Small Claims/Collection)
+    - "Pulis", "Blotter", "Kulata", "Sumbag", "Kawat" -> **Criminal Law**
+    - "Trabaho", "Sweldo", "Dismiss", "Backpay" -> **Labor Law**
+-
+    **Categorization Rules (Priority Logic):**
+    1. **Family vs. Criminal:** If violence ("kulata", "sumbag", "threat") involves a spouse, partner, or child, prioritize **Family Law** (VAWC). If it involves a stranger or neighbor, prioritize **Criminal Law**.
+    2. **Property vs. Criminal:** If the conflict starts with a land/boundary dispute ("ilog yuta") leading to harassment, prioritize **Property Law** as Primary, and Criminal Law as Secondary.
+    3. **Labor vs. Civil:** If the unpaid money is from an employer ("amo", "boss"), prioritize **Labor Law**. If it is a personal loan between friends/others, prioritize **Civil Law**.
 
-Case Narrative:
-"{$narrative}"
+    **Client's Raw Narrative:**
+    "{$narrative}"
 
-Please analyze this case and respond ONLY with a valid JSON object (no markdown, no explanation) with the following structure:
-{
-    "professional_summary": "A detailed 4-5 sentence professional summary describing the case, key legal issues, and the client's request",
-    "detected_services": {
-        "primary": "The main legal service category",
-        "secondary": "A secondary category if applicable, or null"
-    },
-    "complexity_level": "simple|moderate|complex",
-    "estimated_duration_minutes": 45|60|90|120,
-    "document_checklist": [
-        {"item": "Document name", "required": true|false, "description": "Why this document is needed"}
-    ],
-    "key_issues": ["Issue 1", "Issue 2"],
-    "recommended_approach": "Brief recommendation for handling this case"
-}
+    **Complexity Rubric (STRICTLY FOLLOW THIS):**
+    - **Simple:** Notarial services, simple inquiries, single administrative requirement (e.g., "Pa notaryo", "Unsay requirements sa visa").
+    - **Moderate:** Standard disputes, collection of sum of money, labor complaints, child support requests, simple ejectment.
+    - **Complex:** Serious crimes (murder, drugs, rape, non-bailable offenses), multiple legal issues (e.g., land dispute leading to physical injury), cases involving corporations, large estates, Annulment, or Appeals.
 
-Base complexity on:
-- Simple: Straightforward matters like document notarization, simple consultations (30-45 mins)
-- Moderate: Cases requiring legal research or multiple consultations (60-90 mins)
-- Complex: Cases involving litigation, multiple parties, or extensive documentation (120 mins)
-PROMPT;
+    **INSTRUCTIONS:**
+    1. **Analyze:** Identify the core legal issue, the incident (The "Naunsa"), and the client's goal (The "Gusto").
+    2. **Summarize (CRITICAL):** Create a detailed "Professional Summary" (3-5 sentences).
+    - Structure: "The client seeks assistance regarding [Legal Category]. The client states that [Details of Incident]. The client desires to [Desired Action]."
+    3. **Categorize:** Select the best service from this list ONLY: {$specializationList}. If unclear, use "General Consultation".
+    4. **Determine Complexity:** Use the Rubric above.
+    5. **Docs Checklist:** Suggest 2-3 specific Philippine legal documents required (e.g., "Barangay Certificate to File Action", "Police Blotter", "Marriage Certificate").
+
+    **Output Requirement:**
+    Return ONLY valid JSON. Do not use markdown code blocks.
+
+    JSON Structure:
+    {
+        "professional_summary": "Detailed English legal summary...",
+        "detected_services": {
+            "primary": "Category Name from list",
+            "secondary": "Alternative Category from list or null"
+        },
+        "complexity_level": "simple|moderate|complex",
+        "estimated_duration_minutes": 30|45|60,
+        "document_checklist": [
+            {"item": "Document Name", "required": true, "description": "Short reason why"}
+        ]
     }
+    PROMPT;
+        }
 
     /**
      * Extract JSON from AI response
@@ -189,27 +210,39 @@ PROMPT;
      */
     protected function parseAiResponse(array $aiResponse, string $narrative): array
     {
-        $detectedServices = [];
-        
-        if (isset($aiResponse['detected_services'])) {
-            if (is_array($aiResponse['detected_services'])) {
-                if (isset($aiResponse['detected_services']['primary'])) {
-                    $detectedServices = $aiResponse['detected_services'];
-                } else {
-                    $detectedServices = [
-                        'primary' => $aiResponse['detected_services'][0] ?? 'General Consultation',
-                        'secondary' => $aiResponse['detected_services'][1] ?? null,
-                    ];
-                }
-            }
+        // 1. Get Services
+        $primaryService = $aiResponse['detected_services']['primary'] ?? 'General Consultation';
+        if (is_array($primaryService)) $primaryService = $primaryService[0] ?? 'General Consultation';
+
+        $detectedServices = [
+            'primary' => $primaryService,
+            'secondary' => $aiResponse['detected_services']['secondary'] ?? null,
+        ];
+
+        // 2. Logic Update: Dili na nato i-force og "General Consultation" basta-basta.
+        // Check lang nato kung nonsense ba kaayo ang input (sobra ka mubo).
+        $isVeryShort = strlen(trim($narrative)) < 15; // Example: "hi" or "test"
+
+        if ($isVeryShort) {
+            $summary = "The client seeks general legal consultation. Please interview the client to determine specific needs.";
+            $complexity = 'simple';
+            $duration = 30;
+        } else {
+            // TRUST THE AI: Gamiton nato ang detailed summary gikan sa buildPrompt
+            $summary = $aiResponse['professional_summary'] ?? "Client narrative requires lawyer review. Input: " . $narrative;
+            $complexity = $aiResponse['complexity_level'] ?? 'moderate';
+            $duration = $aiResponse['estimated_duration_minutes'] ?? 60;
         }
 
+        // 3. Get Checklist
+        $checklist = $aiResponse['document_checklist'] ?? $this->getDocumentChecklist($detectedServices['primary']);
+
         return [
-            'professional_summary' => $aiResponse['professional_summary'] ?? $this->generateFallbackSummary($narrative),
+            'professional_summary' => $summary,
             'detected_services' => $detectedServices,
-            'complexity_level' => $aiResponse['complexity_level'] ?? 'moderate',
-            'estimated_duration_minutes' => $aiResponse['estimated_duration_minutes'] ?? 60,
-            'document_checklist' => $aiResponse['document_checklist'] ?? [],
+            'complexity_level' => $complexity,
+            'estimated_duration_minutes' => $duration,
+            'document_checklist' => $checklist,
         ];
     }
 
@@ -331,34 +364,62 @@ PROMPT;
         $scores['current_workload'] = round($workloadRatio * 10);
 
         return $scores;
-    }    /**
+    }    
+    
+    /**
      * Get mock response for development/testing
      */
     protected function getMockResponse(string $narrative): array
     {
-        // Detect keywords for service classification
+        // 1. Pre-process text
         $narrativeLower = strtolower($narrative);
+        $wordCount = str_word_count($narrative);
         
-        $services = [
-            'primary' => 'General Consultation',
-            'secondary' => null,
+        // 2. Define High Severity Keywords (Automatic Complex & High Priority)
+        $highSeverityKeywords = [
+            'murder', 'homicide', 'rape', 'drugs', 'shabu', 'kidnap', 'carnapping', 'rebellion',
+            'patay', 'pumatay', 'lugos', 'droga', 'pusil', 'baril', 'dunggab'
         ];
 
-        // Define keyword mappings for each specialization
+        // Check for severity first
+        $isSevere = false;
+        foreach ($highSeverityKeywords as $severeWord) {
+            if (str_contains($narrativeLower, $severeWord)) {
+                $isSevere = true;
+                break;
+            }
+        }
+
+        // 3. Define Categorization Keywords
         $serviceKeywords = [
-            'Family Law' => ['family', 'divorce', 'custody', 'marriage', 'annulment', 'child support', 'alimony', 'adoption', 'separation', 'spouse', 'husband', 'wife', 'children', 'parent'],
-            'Criminal Law' => ['criminal', 'arrest', 'crime', 'theft', 'assault', 'murder', 'robbery', 'fraud', 'drug', 'police', 'jail', 'prison', 'accused', 'victim', 'complaint', 'barangay blotter'],
-            'Labor Law' => ['labor', 'employment', 'work', 'employer', 'employee', 'salary', 'wages', 'termination', 'fired', 'dismissed', 'resignation', 'overtime', 'benefits', 'dole', 'nlrc'],
-            'Property Law' => ['property', 'land', 'title', 'deed', 'real estate', 'lot', 'house', 'boundary', 'ejectment', 'tenant', 'lease', 'mortgage', 'foreclosure', 'inheritance', 'transfer'],
-            'Civil Law' => ['contract', 'agreement', 'breach', 'damages', 'obligation', 'debt', 'loan', 'collection', 'dispute', 'sue', 'lawsuit', 'liability', 'negligence'],
-            'Administrative Law' => ['government', 'permit', 'license', 'agency', 'administrative', 'appeal', 'civil service', 'public official', 'ordinance', 'regulation'],
-            'Corporate Law' => ['business', 'corporation', 'company', 'partnership', 'sec', 'incorporation', 'shareholders', 'board', 'merger', 'acquisition'],
-            'Tax Law' => ['tax', 'bir', 'income tax', 'vat', 'assessment', 'tax evasion', 'tax return', 'audit'],
-            'Immigration Law' => ['immigration', 'visa', 'passport', 'deportation', 'alien', 'foreigner', 'naturalization', 'citizenship'],
-            'Notarial Services' => ['notarize', 'notary', 'affidavit', 'acknowledgment', 'oath', 'jurat', 'certified copy'],
+            'Family Law' => [
+                'family', 'divorce', 'custody', 'marriage', 'annulment', 'child support', 'spousal support', 'adoption', 'separation', 'vawc',
+                'asawa', 'bana', 'anak', 'sustento', 'live-in', 'bun-og', 'panagbuwag', 'relasyon'
+            ],
+            'Criminal Law' => [
+                'criminal', 'arrest', 'theft', 'assault', 'robbery', 'fraud', 'police', 'jail', 'prison', 'blotter', 'warrant',
+                'pulis', 'priso', 'kawat', 'sumbag', 'kaso', 'pyansa', 'holdup', 'ilad', 'estafa'
+            ],
+            'Labor Law' => [
+                'labor', 'employment', 'employer', 'employee', 'salary', 'wages', 'termination', 'dismissed', 'resignation', 'overtime', 'dole', 'nlrc',
+                'trabaho', 'sweldo', 'amo', 'backpay', 'separation pay', 'illegal dismissal', 'endo'
+            ],
+            'Property Law' => [
+                'property', 'land', 'title', 'deed', 'real estate', 'boundary', 'ejectment', 'tenant', 'lease', 'mortgage', 'inheritance',
+                'yuta', 'lupa', 'titulo', 'silingan', 'ali', 'harass', 'encroach', 'renta', 'papahawa', 'panulundon'
+            ],
+            'Civil Law' => [
+                'contract', 'agreement', 'breach', 'damages', 'debt', 'loan', 'collection', 'sue', 'negligence',
+                'utang', 'bayad', 'singil', 'bounce check', 'kasabutan', 'lugi', 'danyos'
+            ],
+            'Administrative Law' => ['government', 'permit', 'license', 'civil service', 'ordinance', 'munisipyo', 'mayor', 'kapitan'],
+            'Corporate Law' => ['corporation', 'company', 'partnership', 'sec', 'incorporation', 'stocks', 'shares', 'negosyo'],
+            'Tax Law' => ['tax', 'bir', 'income tax', 'vat', 'audit', 'buhis', 'amilyar'],
+            'Immigration Law' => ['immigration', 'visa', 'passport', 'deportation', 'ofw', 'abroad'],
+            'Notarial Services' => ['notarize', 'notary', 'affidavit', 'spaa', 'panotaryo'],
         ];
 
-        // Find matching services
+        // 4. Scoring Logic (Count matches)
         $matchedServices = [];
         foreach ($serviceKeywords as $service => $keywords) {
             $matchCount = 0;
@@ -368,45 +429,56 @@ PROMPT;
                 }
             }
             if ($matchCount > 0) {
+                // Bonus points for High Severity keywords matching Criminal Law
+                if ($isSevere && $service === 'Criminal Law') {
+                    $matchCount += 10; 
+                }
                 $matchedServices[$service] = $matchCount;
             }
         }
 
-        // Sort by match count and get top 2
-        arsort($matchedServices);
+        // 5. Determine Winners
+        arsort($matchedServices); // Sort highest first
         $topServices = array_keys(array_slice($matchedServices, 0, 2, true));
 
-        if (count($topServices) > 0) {
-            $services['primary'] = $topServices[0];
-            if (count($topServices) > 1) {
-                $services['secondary'] = $topServices[1];
-            }
-        }
+        $primaryService = $topServices[0] ?? 'General Consultation';
+        $secondaryService = $topServices[1] ?? null;
 
-        // Determine complexity based on word count and keyword density
-        $wordCount = str_word_count($narrative);
-        $complexity = 'moderate';
-        $duration = 60;
-
-        if ($wordCount < 50) {
-            $complexity = 'simple';
-            $duration = 45;
-        } elseif ($wordCount > 150 || count($matchedServices) > 2) {
+        // 6. Determine Complexity & Duration
+        if ($isSevere) {
             $complexity = 'complex';
-            $duration = 120;
+            $duration = 90; // Severe cases need more time
+        } elseif ($wordCount < 20 && empty($matchedServices)) {
+            $complexity = 'simple';
+            $duration = 30;
+        } elseif ($wordCount > 100 || count($matchedServices) >= 2) {
+            $complexity = 'complex';
+            $duration = 60;
+        } else {
+            $complexity = 'moderate';
+            $duration = 45;
         }
 
-        // Generate service-specific document checklist
-        $documentChecklist = $this->getDocumentChecklist($services['primary']);
+        // 7. Generate Output
+        $summary = match($primaryService) {
+            'General Consultation' => "The client seeks general legal consultation. Please interview to determine specifics.",
+            'Criminal Law' => $isSevere 
+                ? "URGENT: Client reports a serious criminal incident involving potential violence or heavy penalties. Immediate legal assessment required." 
+                : "The client seeks assistance regarding a Criminal Law matter based on reported incidents.",
+            default => "The client requests assistance regarding {$primaryService}. Based on keywords detected, the case involves issues related to this field."
+        };
 
         return [
-            'professional_summary' => 'The client seeks legal consultation regarding ' . $services['primary'] . ' matters. Based on the provided narrative, this case requires professional legal assessment and guidance.',
-            'detected_services' => $services,
+            'professional_summary' => $summary,
+            'detected_services' => [
+                'primary' => $primaryService,
+                'secondary' => $secondaryService
+            ],
             'complexity_level' => $complexity,
             'estimated_duration_minutes' => $duration,
-            'document_checklist' => $documentChecklist,
-            'key_issues' => ['Legal consultation required', 'Document review needed'],
-            'recommended_approach' => 'Schedule an initial consultation to assess the case details and provide legal advice.',
+            'document_checklist' => $this->getDocumentChecklist($primaryService),
+            'key_issues' => ['Legal assessment required', 'Document review'],
+            'recommended_approach' => 'Schedule an immediate consultation.'
         ];
     }
 

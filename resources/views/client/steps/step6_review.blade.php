@@ -15,7 +15,6 @@
                 @endphp
                 
                 <div class="row">
-                    <!-- Client Information -->
                     <div class="col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header">
@@ -40,7 +39,6 @@
                         </div>
                     </div>
                     
-                    <!-- Appointment Details -->
                     <div class="col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header">
@@ -76,7 +74,6 @@
                 </div>
                 
                 <div class="row">
-                    <!-- Lawyer Information -->
                     <div class="col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header">
@@ -104,7 +101,6 @@
                         </div>
                     </div>
                     
-                    <!-- Case Information -->
                     <div class="col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header">
@@ -131,7 +127,6 @@
                     </div>
                 </div>
                 
-                <!-- Case Summary -->
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>Case Summary</h5>
@@ -140,21 +135,6 @@
                         <p class="mb-0">{{ $recommendation->professional_summary ?? '' }}</p>
                     </div>
                 </div>
-                
-                <!-- Document Checklist Reminder -->
-                @if(!empty($recommendation->document_checklist))
-                <div class="alert alert-warning">
-                    <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Don't Forget Your Documents!</h6>
-                    <p class="mb-2">Please bring the following to your appointment:</p>
-                    <ul class="mb-0">
-                        @foreach($recommendation->document_checklist as $doc)
-                        @if($doc['required'] ?? false)
-                        <li><strong>{{ $doc['item'] ?? $doc }}</strong></li>
-                        @endif
-                        @endforeach
-                    </ul>
-                </div>
-                @endif
                 
                 <div class="d-flex justify-content-between mt-4">
                     <button type="button" class="btn btn-outline-secondary" onclick="goBack(5)">

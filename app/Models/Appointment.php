@@ -34,6 +34,7 @@ class Appointment extends Model
         'checked_in_at',
         'started_at',
         'completed_at',
+        'admin_notes',
     ];
 
     protected $casts = [
@@ -108,7 +109,12 @@ class Appointment extends Model
      */
     public function clientRecord(): BelongsTo
     {
-        return $this->belongsTo(ClientRecord::class);
+        return $this->belongsTo(ClientRecord::class, 'client_record_id');
+    }   
+
+    public function client(): BelongsTo
+    {
+        return $this->clientRecord();
     }
 
     /**
@@ -116,7 +122,7 @@ class Appointment extends Model
      */
     public function lawyer(): BelongsTo
     {
-        return $this->belongsTo(Lawyer::class);
+        return $this->belongsTo(Lawyer::class, 'lawyer_id');
     }
 
     /**
@@ -140,7 +146,7 @@ class Appointment extends Model
      */
     public function getStatusLabelAttribute(): string
     {
-        return self::STATUS_LABELS[$this->status] ?? $this->status;
+        return self::STATUS_LABELS[$this->status] ?? ucfirst(str_replace('_', ' ', $this->status));
     }
 
     /**
@@ -156,7 +162,7 @@ class Appointment extends Model
      */
     public function getFormattedDateAttribute(): string
     {
-        return $this->start_datetime->format('F j, Y');
+        return $this->start_datetime ? $this->start_datetime->format('F j, Y') : '-';
     }
 
     /**
@@ -164,7 +170,10 @@ class Appointment extends Model
      */
     public function getFormattedTimeRangeAttribute(): string
     {
-        return $this->start_datetime->format('g:i A') . ' - ' . $this->end_datetime->format('g:i A');
+        if ($this->start_datetime && $this->end_datetime) {
+            return $this->start_datetime->format('g:i A') . ' - ' . $this->end_datetime->format('g:i A');
+        }
+        return '-';
     }
 
     /**
@@ -226,7 +235,7 @@ class Appointment extends Model
     public function start(): self
     {
         $this->update([
-            'status' => 'in_progress',
+            'status' => 'in_progress', // Fixed: Standardized to in_progress
             'started_at' => now(),
         ]);
 
