@@ -12,6 +12,8 @@ use App\Services\AiService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Mail\AppointmentSubmitted;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -345,8 +347,20 @@ class BookingController extends Controller
         // Delete the draft
         $draft->delete();
 
-        // TODO: Send confirmation email
-        // Mail::to($clientRecord->email)->send(new AppointmentConfirmation($appointment));
+        // Load lawyer relationship for the email
+        $appointment->load('lawyer.user');
+
+        // Send acknowledgement email to the client
+        try {
+            Mail::to($clientRecord->email)
+                ->send(new AppointmentSubmitted($appointment, $clientRecord));
+        } catch (\Exception $e) {
+            Log::error('Failed to send appointment acknowledgement email', [
+                'appointment_id' => $appointment->id,
+                'email'          => $clientRecord->email,
+                'error'          => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
             'success' => true,

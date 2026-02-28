@@ -10,7 +10,7 @@
             <p class="text-muted mb-0">View and manage all system appointments</p>
         </div>
         <div>
-             <a href="{{ route('admin.appointments.queue') }}" class="btn btn-info text-white">
+             <a href="{{ route('admin.appointments.queue') }}" class="btn btn-primary text-white">
                 <i class="bi bi-clock-history me-1"></i> View Today's Queue
             </a>
         </div>
@@ -86,8 +86,8 @@
                                     <strong>{{ $appointment->clientRecord->full_name }}</strong>
                                 </td>
                                 <td>
-                                    @if($appointment->lawyer)
-                                        {{ $appointment->lawyer->name }}
+                                    @if($appointment->lawyer && $appointment->lawyer->user)
+                                        {{ $appointment->lawyer->user->name }}
                                     @else
                                         <span class="text-muted fst-italic">Unassigned</span>
                                     @endif
@@ -99,7 +99,37 @@
                                     {{ $appointment->start_datetime->format('Y-m-d h:i A') }}
                                 </td>
                                 <td>
-                                    @include('components.appointment-actions', ['appointment' => $appointment])
+                                    {{-- View Details --}}
+                                    <a href="{{ route('admin.appointments.show', $appointment->id) }}" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {{-- Confirm (pending only) --}}
+                                    @if($appointment->status === 'pending')
+                                        <a href="#" class="btn btn-sm btn-outline-success me-1" title="Confirm" data-bs-toggle="modal" data-bs-target="#confirmModal-{{ $appointment->id }}">
+                                            <i class="bi bi-check2-circle"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-outline-danger me-1" title="Decline" data-bs-toggle="modal" data-bs-target="#declineModal-{{ $appointment->id }}">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    @endif
+                                    {{-- Cancel (confirmed only) --}}
+                                    @if($appointment->status === 'confirmed')
+                                        <a href="#" class="btn btn-sm btn-outline-warning me-1" title="Cancel" data-bs-toggle="modal" data-bs-target="#cancelModal-{{ $appointment->id }}">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    @endif
+                                    {{-- Complete (ongoing only) --}}
+                                    @if($appointment->status === 'ongoing')
+                                        <a href="#" class="btn btn-sm btn-outline-success me-1" title="Complete">
+                                            <i class="bi bi-check2"></i>
+                                        </a>
+                                    @endif
+                                    {{-- Summary (completed only) --}}
+                                    @if($appointment->status === 'completed')
+                                        <a href="#" class="btn btn-sm btn-outline-info me-1" title="View Summary" data-bs-toggle="modal" data-bs-target="#summaryModal-{{ $appointment->id }}">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -191,6 +221,96 @@
         </div>
     </div>
     @endif
+
+    {{-- Cancel Modal --}}
+    <div class="modal fade" id="cancelModal-{{ $appointment->id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('admin.appointments.cancel', $appointment->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">Cancel Appointment</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i> Are you sure you want to cancel this appointment? This action cannot be undone.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Reason for Cancellation (optional)</label>
+                            <textarea class="form-control" name="cancel_reason" rows="3" placeholder="State the reason..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-warning">Cancel Appointment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Appointment Summary Modal --}}
+    <div class="modal fade" id="summaryModal-{{ $appointment->id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-file-earmark-text me-2"></i> Appointment Summary
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Reference</dt>
+                        <dd class="col-sm-8"><code class="bg-light text-dark px-2 py-1 rounded">{{ $appointment->reference_number }}</code></dd>
+
+                        <dt class="col-sm-4">Client</dt>
+                        <dd class="col-sm-8">{{ $appointment->clientRecord->full_name }}</dd>
+
+                        <dt class="col-sm-4">Lawyer</dt>
+                        <dd class="col-sm-8">
+                            @if($appointment->lawyer && $appointment->lawyer->user)
+                                {{ $appointment->lawyer->user->name }}
+                                <br>
+                                <span class="text-muted small">{{ $appointment->lawyer->specializations->pluck('name')->join(', ') }}</span>
+                            @else
+                                <span class="text-muted fst-italic">Unassigned</span>
+                            @endif
+                        </dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <x-status-badge :status="$appointment->status" />
+                        </dd>
+
+                        <dt class="col-sm-4">Start Time</dt>
+                        <dd class="col-sm-8">{{ $appointment->start_datetime->format('Y-m-d h:i A') }}</dd>
+
+                        <dt class="col-sm-4">End Time</dt>
+                        <dd class="col-sm-8">{{ $appointment->end_datetime ? $appointment->end_datetime->format('Y-m-d h:i A') : '-' }}</dd>
+
+                        <dt class="col-sm-4">Consultation Notes</dt>
+                        <dd class="col-sm-8">
+                            @php
+                                $completionEntry = $appointment->clientRecord?->entries
+                                    ?->where('appointment_id', $appointment->id)
+                                    ->first();
+                            @endphp
+                            @if($completionEntry)
+                                {{ $completionEntry->content }}
+                            @else
+                                <span class="text-muted fst-italic">No resolution notes.</span>
+                            @endif
+                        </dd>
+                    </dl>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endforeach
 
 @endsection

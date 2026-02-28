@@ -10,6 +10,9 @@
                     <i class="bi bi-check-circle me-2"></i>
                     Our AI has analyzed your case. Please review the results below.
                 </div>
+
+
+
                 
                 <div class="card mb-4">
                     <div class="card-header">

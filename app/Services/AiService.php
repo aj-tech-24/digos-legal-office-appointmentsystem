@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\Log;
 class AiService
 {
     protected string $apiKey;
-    protected string $apiUrl;    public function __construct()
+    protected string $apiUrl;
+
+    public function __construct()
     {
         $this->apiKey = config('services.gemini.api_key', '');
-        $this->apiUrl = config('services.gemini.api_url', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent');
+        $this->apiUrl = config('services.gemini.api_url', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent');
     }
 
     /**
@@ -27,8 +29,19 @@ class AiService
         $narrativeHash = AiRecommendation::generateHash($narrative);
         $existing = AiRecommendation::where('narrative_hash', $narrativeHash)->first();
 
-        if ($existing) {
+        // Only trust cached records that came from a REAL successful Gemini API call.
+        // Records with _source = 'mock', 'gemini_fallback_mock', 'gemini_exception_mock', or
+        // 'unknown' were created during quota errors / no-key periods and must be refreshed.
+        $cachedSource = $existing->raw_ai_response['_source'] ?? 'unknown';
+        $isTrustedCache = $existing && $cachedSource === 'gemini';
+
+        if ($isTrustedCache) {
             return $existing;
+        }
+
+        // Delete stale/fallback record — will be replaced with a fresh real API call
+        if ($existing) {
+            $existing->delete();
         }
 
         // Process with AI
@@ -70,7 +83,6 @@ class AiService
     protected function callGeminiApi(string $narrative): array
     {
         if (empty($this->apiKey)) {
-            // Return mock response for development
             return $this->getMockResponse($narrative);
         }
 
@@ -96,16 +108,29 @@ class AiService
             if ($response->successful()) {
                 $data = $response->json();
                 $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-                
-                return $this->extractJsonFromResponse($text);
+
+                $parsed = $this->extractJsonFromResponse($text);
+                $parsed['_source'] = 'gemini';
+                return $parsed;
             }
 
-            Log::error('Gemini API Error', ['response' => $response->body()]);
-            return $this->getMockResponse($narrative);
+            Log::error('AiService: Gemini API returned HTTP error', [
+                'status'   => $response->status(),
+                'body'     => substr($response->body(), 0, 500),
+            ]);
+            $fallback = $this->getMockResponse($narrative);
+            $fallback['_source'] = 'gemini_fallback_mock'; // tag: API called but failed
+            return $fallback;
 
         } catch (\Exception $e) {
-            Log::error('Gemini API Exception', ['error' => $e->getMessage()]);
-            return $this->getMockResponse($narrative);
+            Log::error('AiService: Gemini API Exception', [
+                'error'   => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+            $fallback = $this->getMockResponse($narrative);
+            $fallback['_source'] = 'gemini_exception_mock';
+            return $fallback;
         }
     }
 
@@ -128,7 +153,7 @@ class AiService
     - "Utang", "Bayad", "Singil", "Estafa", "Bounce Check" -> **Civil Law** (Small Claims/Collection)
     - "Pulis", "Blotter", "Kulata", "Sumbag", "Kawat" -> **Criminal Law**
     - "Trabaho", "Sweldo", "Dismiss", "Backpay" -> **Labor Law**
--
+    
     **Categorization Rules (Priority Logic):**
     1. **Family vs. Criminal:** If violence ("kulata", "sumbag", "threat") involves a spouse, partner, or child, prioritize **Family Law** (VAWC). If it involves a stranger or neighbor, prioritize **Criminal Law**.
     2. **Property vs. Criminal:** If the conflict starts with a land/boundary dispute ("ilog yuta") leading to harassment, prioritize **Property Law** as Primary, and Criminal Law as Secondary.
@@ -170,37 +195,41 @@ class AiService
         }
 
     /**
-     * Extract JSON from AI response
+     * Extract JSON from AI response — handles markdown fences and trailing text
      */
     protected function extractJsonFromResponse(string $response): array
     {
-        // Try to find JSON in the response
         $response = trim($response);
-        
-        // Remove markdown code blocks if present
-        $response = preg_replace('/```json\s*/i', '', $response);
-        $response = preg_replace('/```\s*/', '', $response);
-        
-        try {
-            $decoded = json_decode($response, true);
+
+        // ── Strategy 1: Extract from inside ```json ... ``` fences (most common with Gemini)
+        if (preg_match('/```(?:json)?\s*([\s\S]*?)```/i', $response, $fenceMatch)) {
+            $candidate = trim($fenceMatch[1]);
+            $decoded = json_decode($candidate, true);
             if (is_array($decoded)) {
                 return $decoded;
             }
-        } catch (\Exception $e) {
-            // Continue to regex extraction
         }
 
-        // Try to extract JSON object
-        if (preg_match('/\{[\s\S]*\}/', $response, $matches)) {
-            try {
-                $decoded = json_decode($matches[0], true);
-                if (is_array($decoded)) {
-                    return $decoded;
-                }
-            } catch (\Exception $e) {
-                // Return empty array
+        // ── Strategy 2: Entire response is plain JSON (no fences)
+        $decoded = json_decode($response, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        // ── Strategy 3: Find first { and last } and extract that block
+        $start = strpos($response, '{');
+        $end   = strrpos($response, '}');
+        if ($start !== false && $end !== false && $end > $start) {
+            $candidate = substr($response, $start, $end - $start + 1);
+            $decoded = json_decode($candidate, true);
+            if (is_array($decoded)) {
+                return $decoded;
             }
         }
+
+        Log::error('AiService: Failed to extract JSON from Gemini response', [
+            'response_preview' => substr($response, 0, 400),
+        ]);
 
         return [];
     }
@@ -469,16 +498,17 @@ class AiService
         };
 
         return [
-            'professional_summary' => $summary,
-            'detected_services' => [
-                'primary' => $primaryService,
+            'professional_summary'     => $summary,
+            'detected_services'        => [
+                'primary'   => $primaryService,
                 'secondary' => $secondaryService
             ],
-            'complexity_level' => $complexity,
+            'complexity_level'         => $complexity,
             'estimated_duration_minutes' => $duration,
-            'document_checklist' => $this->getDocumentChecklist($primaryService),
-            'key_issues' => ['Legal assessment required', 'Document review'],
-            'recommended_approach' => 'Schedule an immediate consultation.'
+            'document_checklist'       => $this->getDocumentChecklist($primaryService),
+            'key_issues'               => ['Legal assessment required', 'Document review'],
+            'recommended_approach'     => 'Schedule an immediate consultation.',
+            '_source'                  => 'mock', // tag: local keyword-matching used
         ];
     }
 

@@ -34,6 +34,10 @@
                                         <td class="text-muted">Phone:</td>
                                         <td>{{ $state['phone'] ?? 'Not provided' }}</td>
                                     </tr>
+                                    <tr>
+                                        <td class="text-muted">Address:</td>
+                                        <td>{{ $state['address'] ?? 'Not provided' }}</td>
+                                    </tr>
                                 </table>
                             </div>
                         </div>

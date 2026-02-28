@@ -15,7 +15,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex items-center gap-4 animate-slide-down">
-                    <img src="{{ asset('images/digos-logo.png') }}" class="h-12 w-12" alt="Logo" onerror="this.style.display='none'">
+                    <img src="{{ asset('images/digos-logo.png') }}" class="h-16 w-16" alt="Logo" onerror="this.style.display='none'">
                     <div>
                         <h1 class="text-xl font-bold leading-tight">Digos City Legal Office</h1>
                         <p class="text-xs text-gray-300 tracking-wide">JUSTICE • INTEGRITY • SERVICE</p>
@@ -198,5 +198,17 @@
             </div>
         </div>
     </footer>
+    <script>
+        // Anti-tamper: Restore DOM if edited
+        const originalBody = document.body.innerHTML;
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (document.body.innerHTML !== originalBody) {
+                    document.body.innerHTML = originalBody;
+                }
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    </script>
 </body>
 </html>

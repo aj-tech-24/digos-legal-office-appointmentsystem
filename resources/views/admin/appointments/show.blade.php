@@ -130,106 +130,55 @@
                 </div>
             </div>
 
-            {{-- Document Checklist (Displayed when confirmed/ongoing) --}}
+
+
+            {{-- Notes Section --}}
             <div class="card mb-4">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-list-check me-2"></i> Document Checklist</h5>
-                    <small class="text-muted ms-4">Documents required for this case type.</small>
-                </div>
-                <div class="card-body">
-                    @if($appointment->document_checklist && count($appointment->document_checklist) > 0)
-                        <ul class="list-group list-group-flush">
-                            @foreach($appointment->document_checklist as $document)
-                            @php
-                                $docName = is_array($document) ? ($document['item'] ?? 'Unknown Document') : $document;
-                                $docRequired = is_array($document) ? ($document['required'] ?? false) : false;
-                            @endphp
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <input class="form-check-input me-2" type="checkbox" disabled>
-                                    <span class="fw-bold">{{ $docName }}</span>
-                                </div>
-                                @if($docRequired) <span class="badge bg-danger">Required</span> @endif
-                            </li>
-                            @endforeach
-                        </ul>
-                    @else
-                        <p class="text-muted text-center my-3">No specific documents listed.</p>
-                    @endif
-                </div>
-            </div>
-
-            {{-- Notes Section (With Filter & Link) --}}
-            <div class="card mb-4">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i> Case Notes</h5>
-                    <div class="input-group input-group-sm w-auto">
-                        <span class="input-group-text"><i class="bi bi-filter"></i> Date</span>
-                        <input type="date" class="form-control" id="noteDateFilter" onchange="filterNotes()">
-                        <button class="btn btn-outline-secondary" onclick="resetNoteFilter()">Reset</button>
-                    </div>
                 </div>
                 <div class="card-body">
                     {{-- Add Note Form --}}
                     <form action="{{ route('admin.appointments.addNote', $appointment->id) }}" method="POST" class="mb-4 border-bottom pb-4">
                         @csrf
                         <div class="mb-2">
-                            <label class="form-label fw-bold small">New Note Content</label>
-                            <textarea class="form-control" name="content" rows="3" required placeholder="Enter detailed case notes..."></textarea>
+                            <label class="form-label fw-bold small">New Note</label>
+                            <textarea class="form-control" name="content" rows="3" required placeholder="Enter case notes for this appointment..."></textarea>
                         </div>
-                        <div class="d-flex justify-content-between">
-                            {{-- UPDATED: Dynamic Dropdown using $clientBookingDates --}}
-                            <select class="form-select form-select-sm w-50" name="linked_booking_date">
-                                <option value="" selected>Link to Booking Date (Optional)</option>
-                                @if(isset($clientBookingDates) && count($clientBookingDates) > 0)
-                                    @foreach($clientBookingDates as $date)
-                                        <option value="{{ $date->start_datetime }}">
-                                            {{ \Carbon\Carbon::parse($date->start_datetime)->format('M d, Y') }} (Ref: {{ $date->reference_number }})
-                                        </option>
-                                    @endforeach
-                                @else
-                                    {{-- Fallback --}}
-                                    <option value="{{ $appointment->start_datetime }}">
-                                        Current: {{ \Carbon\Carbon::parse($appointment->start_datetime)->format('M d, Y') }}
-                                    </option>
-                                @endif
-                            </select>
+                        <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary btn-sm">
                                 <i class="bi bi-plus-lg me-1"></i> Add Note
                             </button>
                         </div>
                     </form>
 
-                    {{-- Notes List --}}
+                    {{-- Notes List — only entries tied to this appointment --}}
                     <div id="notesContainer">
-                        {{-- Use ClientRecord entries if they exist --}}
-                        @if(optional($appointment->clientRecord)->entries && $appointment->clientRecord->entries->count() > 0)
-                            @foreach($appointment->clientRecord->entries as $entry)
-                                {{-- Added data-date for JS filter --}}
-                                <div class="note-item d-flex mb-3 pb-3 border-bottom" data-date="{{ $entry->created_at->format('Y-m-d') }}">
-                                    <div class="me-3 text-center" style="min-width: 60px;">
-                                        <div class="bg-light rounded p-1 border">
-                                            <small class="d-block fw-bold text-muted">{{ $entry->created_at->format('M') }}</small>
-                                            <span class="fs-5 fw-bold">{{ $entry->created_at->format('d') }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between">
-                                            <h6 class="mb-1 fw-bold">{{ $entry->title ?? 'Note' }}</h6>
-                                            <small class="text-muted">{{ $entry->created_at->format('h:i A') }}</small>
-                                        </div>
-                                        <p class="mb-1 text-muted small">{{ $entry->content }}</p>
-                                        @if($entry->linked_booking_date)
-                                            <span class="badge bg-light text-dark border mt-1">
-                                                <i class="bi bi-link-45deg"></i> Linked to: {{ \Carbon\Carbon::parse($entry->linked_booking_date)->format('M d, Y') }}
-                                            </span>
-                                        @endif
+                        @forelse(optional($appointment->clientRecord)->entries ?? [] as $entry)
+                            <div class="note-item d-flex mb-3 pb-3 border-bottom">
+                                <div class="me-3 text-center" style="min-width: 60px;">
+                                    <div class="bg-light rounded p-1 border">
+                                        <small class="d-block fw-bold text-muted">{{ $entry->created_at->format('M') }}</small>
+                                        <span class="fs-5 fw-bold">{{ $entry->created_at->format('d') }}</span>
                                     </div>
                                 </div>
-                            @endforeach
-                        @else
-                            <div class="text-center text-muted py-3">No notes found for this client history.</div>
-                        @endif
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1 fw-bold">
+                                            <i class="bi bi-{{ $entry->type_icon ?? 'journal-text' }} me-1 text-muted"></i>
+                                            {{ $entry->title ?? $entry->type_label ?? 'Note' }}
+                                        </h6>
+                                        <small class="text-muted">{{ $entry->created_at->format('h:i A') }}</small>
+                                    </div>
+                                    <p class="mb-0 text-muted small">{{ $entry->content }}</p>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-journal-x fs-3 d-block mb-2 opacity-50"></i>
+                                No notes for this appointment yet.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -251,8 +200,14 @@
                                 {{ strtoupper(substr($appointment->lawyer->user->first_name ?? 'L', 0, 1)) }}
                             </div>
                             <div>
-                                <h6 class="mb-0 fw-bold">{{ $appointment->lawyer->user->first_name ?? '' }} {{ $appointment->lawyer->user->last_name ?? '' }}</h6>
-                                <small class="text-muted">{{ $appointment->lawyer->specialization ?? 'Legal Counsel' }}</small>
+                                <h6 class="mb-0 fw-bold">{{ $appointment->lawyer->user->name ?? '' }}</h6>
+                                <small class="text-muted">
+                                    @if($appointment->lawyer->specializations && $appointment->lawyer->specializations->count())
+                                        {{ $appointment->lawyer->specializations->pluck('name')->join(', ') }}
+                                    @else
+                                        Legal Counsel
+                                    @endif
+                                </small>
                             </div>
                         </div>
                     @else
@@ -421,27 +376,5 @@
         </div>
     </div>
 </div>
-
-{{-- Script for Note Filtering --}}
-<script>
-    function filterNotes() {
-        var inputDate = document.getElementById("noteDateFilter").value;
-        var notes = document.getElementsByClassName("note-item");
-        
-        for (var i = 0; i < notes.length; i++) {
-            var noteDate = notes[i].getAttribute("data-date");
-            if (inputDate === "" || noteDate === inputDate) {
-                notes[i].style.display = "flex";
-            } else {
-                notes[i].style.display = "none";
-            }
-        }
-    }
-
-    function resetNoteFilter() {
-        document.getElementById("noteDateFilter").value = "";
-        filterNotes();
-    }
-</script>
 
 @endsection

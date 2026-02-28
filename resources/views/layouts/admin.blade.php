@@ -265,6 +265,35 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- <script>
+        // Anti-tamper: Restore DOM if edited (global)
+        window.addEventListener('DOMContentLoaded', function() {
+            const originalBody = document.body.innerHTML;
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (document.body.innerHTML !== originalBody) {
+                        document.body.innerHTML = originalBody;
+                    }
+                });
+            });
+            observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+        });
+        // Disable right-click globally
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+        // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U globally
+        document.addEventListener('keydown', function(e) {
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+                (e.ctrlKey && e.key === 'U')
+            ) {
+                e.preventDefault();
+            }
+        });
+    </script> -->
+    
     @stack('scripts')
 </body>
 </html>

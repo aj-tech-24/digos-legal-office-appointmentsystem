@@ -19,7 +19,16 @@ class AppointmentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Appointment::with(['clientRecord', 'lawyer.user']); 
+        $query = Appointment::with([
+            'clientRecord',
+            'lawyer.user',
+            'lawyer.specializations',
+            // Load only the "appointment_completed" entry for the summary modal notes
+            'clientRecord.entries' => function ($q) {
+                $q->where('entry_type', 'appointment_completed')
+                  ->orderBy('created_at', 'desc');
+            },
+        ]);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -92,19 +101,15 @@ class AppointmentController extends Controller
      */
     public function show(Appointment $appointment, Request $request)
     {
-        // Eager load entries with optional Date Filtering
-        $appointment->load(['lawyer.user', 'clientRecord' => function ($query) {
-            $query->with(['entries' => function ($q) {
-                // Determine if we need to filter by date from request
-                if (request()->filled('history_date')) {
-                    $filterDate = request()->history_date;
-                    // Filter by Created Date OR Linked Booking Date
-                    $q->whereDate('created_at', $filterDate)
-                      ->orWhereDate('linked_booking_date', $filterDate);
-                }
-                $q->orderBy('created_at', 'desc');
-            }]);
-        }]);
+        // Load only entries that belong to THIS specific appointment
+        $appointment->load([
+            'lawyer.user',
+            'clientRecord',
+            'clientRecord.entries' => function ($q) use ($appointment) {
+                $q->where('appointment_id', $appointment->id)
+                  ->orderBy('created_at', 'desc');
+            },
+        ]);
 
         // Get all past/future booking dates for this client to populate the "Link to Booking" dropdown
         $clientBookingDates = [];
