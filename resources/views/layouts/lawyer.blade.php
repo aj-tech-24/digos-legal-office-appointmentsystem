@@ -173,7 +173,7 @@
             </ul>
         </div>
 
-        <div class="mt-auto p-3 border-top border-white border-opacity-25">
+        <!-- <div class="mt-auto p-3 border-top border-white border-opacity-25">
             <div class="d-flex align-items-center text-white">
                 <div class="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center me-2" 
                      style="width: 36px; height: 36px;">
@@ -190,7 +190,7 @@
                     </button>
                 </form>
             </div>
-        </div>
+        </div> -->
     </nav>
 
     <div class="main-content">

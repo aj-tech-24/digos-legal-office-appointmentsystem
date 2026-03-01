@@ -135,7 +135,7 @@
             {{-- Notes Section --}}
             <div class="card mb-4">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i> Case Notes</h5>
+                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Notes</h5>
                 </div>
                 <div class="card-body">
                     {{-- Add Note Form --}}
@@ -143,7 +143,7 @@
                         @csrf
                         <div class="mb-2">
                             <label class="form-label fw-bold small">New Note</label>
-                            <textarea class="form-control" name="content" rows="3" required placeholder="Enter case notes for this appointment..."></textarea>
+                            <textarea class="form-control" name="content" rows="3" required placeholder="Enter notes for this appointment..."></textarea>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary btn-sm">

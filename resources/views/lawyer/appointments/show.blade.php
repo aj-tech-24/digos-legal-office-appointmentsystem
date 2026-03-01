@@ -126,37 +126,7 @@
                         </div>
                     </div>
                 </div>
-            </div>            <!-- Document Checklist -->
-            @if($appointment->document_checklist && count($appointment->document_checklist) > 0)
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-list-check me-2"></i> Document Checklist</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        @foreach($appointment->document_checklist as $document)
-                        @php
-                            $docName = is_array($document) ? ($document['item'] ?? 'Unknown Document') : $document;
-                            $docRequired = is_array($document) ? ($document['required'] ?? false) : false;
-                            $docDescription = is_array($document) ? ($document['description'] ?? '') : '';
-                        @endphp
-                        <li class="list-group-item d-flex align-items-start">
-                            <i class="bi bi-file-earmark text-muted me-2 mt-1"></i>
-                            <div>
-                                <strong>{{ $docName }}</strong>
-                                @if($docRequired)
-                                    <span class="badge bg-danger ms-1">Required</span>
-                                @endif
-                                @if($docDescription)
-                                    <div class="small text-muted">{{ $docDescription }}</div>
-                                @endif
-                            </div>
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
             </div>
-            @endif
 
             <!-- Add Note -->
             <div class="card mb-4">
@@ -215,15 +185,18 @@
             </div>
 
             <!-- Notes & Activity -->
+            @php
+                $appointmentNotes = $appointment->clientRecord->entries->where('appointment_id', $appointment->id);
+            @endphp
             <div class="card">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h6 class="mb-0"><i class="bi bi-journal-text me-2"></i> Notes & Activity</h6>
-                    <span class="badge bg-secondary">{{ $appointment->clientRecord->entries->count() }}</span>
+                    <span class="badge bg-secondary">{{ $appointmentNotes->count() }}</span>
                 </div>
                 <div class="card-body">
-                    @if($appointment->clientRecord->entries->count() > 0)
+                    @if($appointmentNotes->count() > 0)
                         <div class="notes-list">
-                            @foreach($appointment->clientRecord->entries as $entry)
+                            @foreach($appointmentNotes as $entry)
                                 <div class="d-flex mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
                                     <div class="me-2 flex-shrink-0">
                                         <div class="rounded-circle d-flex align-items-center justify-content-center bg-{{ $entry->type_color }} bg-opacity-10" 
@@ -250,7 +223,8 @@
                     @else
                         <div class="text-center text-muted py-3">
                             <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
-                            <p class="mb-0 small">No notes yet.</p>
+                            <p class="mb-0 small">No notes for this appointment yet.</p>
+
                         </div>
                     @endif
                 </div>

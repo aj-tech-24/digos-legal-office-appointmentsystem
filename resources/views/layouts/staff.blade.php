@@ -165,7 +165,7 @@
             </ul>
         </div>
 
-        <div class="mt-auto p-3 border-top border-white border-opacity-25">
+        <!-- <div class="mt-auto p-3 border-top border-white border-opacity-25">
             <div class="d-flex align-items-center text-white">
                 <div class="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center me-2" 
                      style="width: 36px; height: 36px;">
@@ -182,7 +182,7 @@
                     </button>
                 </form>
             </div>
-        </div>
+        </div> -->
     </nav>
 
     <div class="main-content">
@@ -252,32 +252,32 @@
             });
         });
 
-        // Anti-tamper: Restore DOM if edited (global)
-        window.addEventListener('DOMContentLoaded', function() {
-            const originalBody = document.body.innerHTML;
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (document.body.innerHTML !== originalBody) {
-                        document.body.innerHTML = originalBody;
-                    }
-                });
-            });
-            observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-        });
-        // Disable right-click globally
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-        // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U globally
-        document.addEventListener('keydown', function(e) {
-            if (
-                e.key === 'F12' ||
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
-                (e.ctrlKey && e.key === 'U')
-            ) {
-                e.preventDefault();
-            }
-        });
+        // // Anti-tamper: Restore DOM if edited (global)
+        // window.addEventListener('DOMContentLoaded', function() {
+        //     const originalBody = document.body.innerHTML;
+        //     const observer = new MutationObserver(function(mutations) {
+        //         mutations.forEach(function(mutation) {
+        //             if (document.body.innerHTML !== originalBody) {
+        //                 document.body.innerHTML = originalBody;
+        //             }
+        //         });
+        //     });
+        //     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+        // });
+        // // Disable right-click globally
+        // document.addEventListener('contextmenu', function(e) {
+        //     e.preventDefault();
+        // });
+        // // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U globally
+        // document.addEventListener('keydown', function(e) {
+        //     if (
+        //         e.key === 'F12' ||
+        //         (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+        //         (e.ctrlKey && e.key === 'U')
+        //     ) {
+        //         e.preventDefault();
+        //     }
+        // });
     </script>
     @stack('scripts')
 </body>

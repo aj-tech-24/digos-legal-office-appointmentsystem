@@ -288,7 +288,7 @@ class AppointmentController extends Controller
                 'appointment_id' => $appointment->id,
                 'created_by' => Auth::id(),
                 'entry_type' => 'case_note',
-                'title' => 'Case Note',
+                'title' => 'Note',
                 'content' => $content,
                 'linked_booking_date' => $linkedDate,
             ]);
