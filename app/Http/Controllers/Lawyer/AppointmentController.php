@@ -156,7 +156,7 @@ class AppointmentController extends Controller
         $appointment->clientRecord->entries()->create([
             'appointment_id' => $appointment->id,
             'created_by' => Auth::id(),
-            'entry_type' => 'note',
+            'entry_type' => 'case_note',
             'title' => $validated['title'],
             'content' => $validated['content'],
         ]);

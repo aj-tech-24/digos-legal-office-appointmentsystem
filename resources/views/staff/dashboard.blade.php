@@ -169,8 +169,8 @@
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <form action="{{ route('staff.appointments.confirm', $apt->id) }}" method="POST">
-                                                        @csrf
-                                                        <button type="submit" class="dropdown-item text-success">
+                                                    @csrf
+                                                    @method('PATCH') <button type="submit" class="dropdown-item text-success">
                                                             <i class="bi bi-check-circle me-2"></i>Confirm Appointment
                                                         </button>
                                                     </form>

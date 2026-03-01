@@ -69,6 +69,30 @@
                         </div>
                     </div>
                     @endif
+
+                    <hr>
+                    <div class="mb-4">
+                        <h5 class="small font-weight-bold text-primary">CASE NOTES HISTORY</h5>
+                        @if($appointment->clientRecord && $appointment->clientRecord->entries->count() > 0)
+                            <div class="timeline">
+                                @foreach($appointment->clientRecord->entries->sortByDesc('created_at') as $entry)
+                                    <div class="card mb-2 border-left-primary">
+                                        <div class="card-body py-2 px-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <h6 class="m-0 font-weight-bold text-dark">{{ $entry->title }}</h6>
+                                                <small class="text-muted">{{ $entry->created_at->format('M d, Y h:i A') }}</small>
+                                            </div>
+                                            <p class="m-0 text-sm">{!! nl2br(e($entry->content)) !!}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="alert alert-secondary text-center small">
+                                No case notes recorded yet.
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -131,6 +155,7 @@
                 <div class="card-body">
                     <form action="{{ route('staff.appointments.addNote', $appointment->id) }}" method="POST">
                         @csrf
+                        @method('PATCH')
                         <div class="form-group">
                             <label class="small">Note Title</label>
                             <input type="text" name="title" class="form-control" placeholder="e.g., Initial Screening" required>
@@ -166,12 +191,12 @@
 </div>
 
 {{-- MODALS --}}
-<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1055;">
     <div class="modal-dialog" role="document">
-        <form action="{{ route('staff.appointments.confirm', $appointment->id) }}" method="POST">
-            @csrf
-            @method('PATCH')
-            <div class="modal-content">
+        <div class="modal-content"> 
+            <form action="{{ route('staff.appointments.confirm', $appointment->id) }}" method="POST">
+                @csrf
+                @method('PATCH')
                 <div class="modal-header">
                     <h5 class="modal-title">Confirm Appointment</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -203,17 +228,17 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-success">Confirm & Send Email</button>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 
-<div class="modal fade" id="declineModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="declineModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1055;">
     <div class="modal-dialog" role="document">
-        <form action="{{ route('staff.appointments.decline', $appointment->id) }}" method="POST">
-            @csrf
-            @method('PATCH')
-            <div class="modal-content">
+        <div class="modal-content">
+            <form action="{{ route('staff.appointments.decline', $appointment->id) }}" method="POST">
+                @csrf
+                @method('PATCH')
                 <div class="modal-header">
                     <h5 class="modal-title text-danger">Decline Appointment</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -230,8 +255,19 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">Decline Appointment</button>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Sigurohon nato nga mogana ang button inig click 
+    $(document).ready(function() {
+        console.log("jQuery is ready, Modals should work now.");
+    });
+</script>
+@endpush
+
 @endsection
