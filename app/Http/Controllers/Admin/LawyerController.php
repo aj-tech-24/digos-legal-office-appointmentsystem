@@ -235,4 +235,16 @@ class LawyerController extends Controller
 
         return back()->with('success', 'Lawyer suspended.');
     }
+
+    /**
+     * Unsuspend (re-approve) a suspended lawyer
+     */
+    public function unsuspend(Lawyer $lawyer)
+    {
+        $lawyer->update([
+            'status' => 'approved',
+        ]);
+
+        return back()->with('success', 'Lawyer has been unsuspended and is now active.');
+    }
 }

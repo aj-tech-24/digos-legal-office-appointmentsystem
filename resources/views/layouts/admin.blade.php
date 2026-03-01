@@ -224,21 +224,7 @@
             </div>
             <div class="d-flex align-items-center">
                 <span class="me-3 text-muted">{{ auth()->user()->name }}</span>
-                <div class="dropdown">
-                    <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form action="{{ route('logout') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="dropdown-item">Logout</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
+                <i class="bi bi-person-circle"></i>
             </div>
         </div>
         

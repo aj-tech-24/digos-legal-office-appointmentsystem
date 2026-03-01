@@ -136,7 +136,8 @@
                                         ];
                                         $color = $statusColors[$appointment->status] ?? 'secondary';
                                     @endphp
-                                    <span class="badge rounded-pill bg-{{ $color }} bg-opacity-15 text-{{ $color }} border border-{{ $color }} border-opacity-25 px-2 py-1"
+                                    <span class="badge rounded-pill bg-{{ $color }} text-white px-2 py-1"
+
                                           style="font-size:0.75rem;">
                                         {{ ucfirst(str_replace('_', ' ', $appointment->status)) }}
                                     </span>
@@ -150,61 +151,61 @@
 
                                 {{-- Actions --}}
                                 <td class="pe-4 text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                                id="adminDdBtn{{ $appointment->id }}" data-bs-toggle="dropdown"
-                                                aria-expanded="false">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="adminDdBtn{{ $appointment->id }}">
+                                    <div class="d-flex justify-content-end align-items-center gap-1">
 
-                                            {{-- View --}}
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('admin.appointments.show', $appointment->id) }}">
-                                                    <i class="bi bi-eye me-2 text-muted"></i> View Details
-                                                </a>
-                                            </li>
+                                        {{-- View Details (Always) --}}
+                                        <a href="{{ route('admin.appointments.show', $appointment->id) }}"
+                                           class="btn btn-sm btn-outline-secondary" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
 
-                                            {{-- Pending --}}
-                                            @if($appointment->status === 'pending')
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <button class="dropdown-item text-success"
-                                                            data-bs-toggle="modal" data-bs-target="#confirmModal-{{ $appointment->id }}">
-                                                        <i class="bi bi-check2-circle me-2"></i> Confirm
-                                                    </button>
-                                                </li>
-                                                <li>
-                                                    <button class="dropdown-item text-danger"
-                                                            data-bs-toggle="modal" data-bs-target="#declineModal-{{ $appointment->id }}">
-                                                        <i class="bi bi-x-circle me-2"></i> Decline
-                                                    </button>
-                                                </li>
-                                            @endif
+                                        {{-- Pending Actions --}}
+                                        @if($appointment->status === 'pending')
+                                            <button class="btn btn-sm btn-outline-success" title="Confirm"
+                                                    data-bs-toggle="modal" data-bs-target="#confirmModal-{{ $appointment->id }}">
+                                                <i class="bi bi-check2-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" title="Decline"
+                                                    data-bs-toggle="modal" data-bs-target="#declineModal-{{ $appointment->id }}">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        @endif
 
-                                            {{-- Confirmed --}}
-                                            @if($appointment->status === 'confirmed')
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <button class="dropdown-item text-warning"
-                                                            data-bs-toggle="modal" data-bs-target="#cancelModal-{{ $appointment->id }}">
-                                                        <i class="bi bi-x-circle me-2"></i> Cancel
-                                                    </button>
-                                                </li>
-                                            @endif
+                                        {{-- Confirmed (Not yet checked in) --}}
+                                        @if($appointment->status === 'confirmed' && !$appointment->checked_in_at)
+                                            <form action="{{ route('admin.appointments.checkIn', $appointment->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Check In">
+                                                    <i class="bi bi-person-check"></i>
+                                                </button>
+                                            </form>
+                                            <button class="btn btn-sm btn-outline-warning" title="Cancel"
+                                                    data-bs-toggle="modal" data-bs-target="#cancelModal-{{ $appointment->id }}">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        @endif
 
-                                            {{-- Completed --}}
-                                            @if($appointment->status === 'completed')
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <button class="dropdown-item text-info"
-                                                            data-bs-toggle="modal" data-bs-target="#summaryModal-{{ $appointment->id }}">
-                                                        <i class="bi bi-file-earmark-text me-2"></i> View Summary
-                                                    </button>
-                                                </li>
-                                            @endif
+                                        {{-- Confirmed & Checked In --}}
+                                        @if($appointment->status === 'confirmed' && $appointment->checked_in_at)
+                                            <span class="badge bg-success me-1" style="font-size:0.65rem;"><i class="bi bi-check me-1"></i>Checked In</span>
+                                            <form action="{{ route('admin.appointments.start', $appointment->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-info" title="Start Consultation">
+                                                    <i class="bi bi-play-fill"></i>
+                                                </button>
+                                            </form>
+                                        @endif
 
-                                        </ul>
+                                        {{-- In Progress Actions --}}
+                                        @if($appointment->status === 'in_progress')
+                                            <form action="{{ route('admin.appointments.complete', $appointment->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Complete">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+
                                     </div>
                                 </td>
                             </tr>

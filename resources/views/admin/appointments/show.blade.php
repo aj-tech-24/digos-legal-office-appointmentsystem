@@ -25,12 +25,18 @@
                     <i class="bi bi-x-lg me-1"></i> Decline
                 </button>
             @elseif($appointment->status === 'confirmed')
-                <form action="{{ route('admin.appointments.start', $appointment) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-play-fill me-1"></i> Start Consultation
-                    </button>
-                </form>
+                @if($appointment->checked_in_at)
+                    <form action="{{ route('admin.appointments.start', $appointment) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-play-fill me-1"></i> Start Consultation
+                        </button>
+                    </form>
+                @else
+                    <span class="badge bg-info fs-6 py-2 px-3">
+                        <i class="bi bi-hourglass-split me-1"></i> Waiting for Check-in
+                    </span>
+                @endif
             @elseif($appointment->status === 'ongoing') {{-- Fixed: Matches Controller --}}
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#completeModal">
                     <i class="bi bi-check-lg me-1"></i> Complete Consultation

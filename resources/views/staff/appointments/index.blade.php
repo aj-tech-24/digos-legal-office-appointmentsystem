@@ -151,7 +151,7 @@
                                     ];
                                     $color = $statusColors[$appointment->status] ?? 'secondary';
                                 @endphp
-                                <span class="badge rounded-pill bg-{{ $color }} text-white px-2 py-1"
+                                <span class="badge rounded-pill bg-{{ $color }} bg-opacity-15 text-{{ $color }} border border-{{ $color }} border-opacity-25 px-2 py-1"
                                       style="font-size:0.75rem;">
                                     {{ $appointment->status_label }}
                                 </span>
@@ -179,8 +179,8 @@
                                         </button>
                                     @endif
 
-                                    {{-- Confirmed Actions --}}
-                                    @if($appointment->status === 'confirmed')
+                                    {{-- Confirmed Actions (Not yet checked in) --}}
+                                    @if($appointment->status === 'confirmed' && !$appointment->checked_in_at)
                                         <form action="{{ route('staff.appointments.checkIn', $appointment->id) }}" method="POST" class="d-inline">
                                             @csrf @method('PATCH')
                                             <button type="submit" class="btn btn-sm btn-outline-primary" title="Check In">
@@ -196,8 +196,9 @@
                                         </form>
                                     @endif
 
-                                    {{-- Checked In Actions --}}
-                                    @if($appointment->status === 'checked_in')
+                                    {{-- Checked In Actions (confirmed + has checked_in_at) --}}
+                                    @if($appointment->status === 'confirmed' && $appointment->checked_in_at)
+                                        <span class="badge bg-success me-1" style="font-size:0.65rem;"><i class="bi bi-check me-1"></i>Checked In</span>
                                         <form action="{{ route('staff.appointments.start', $appointment->id) }}" method="POST" class="d-inline">
                                             @csrf @method('PATCH')
                                             <button type="submit" class="btn btn-sm btn-outline-info" title="Start Consultation">

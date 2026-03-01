@@ -189,8 +189,8 @@
                                         </button>
                                     @endif
 
-                                    {{-- Confirmed Actions --}}
-                                    @if($appointment->status === 'confirmed')
+                                    {{-- Confirmed Actions (Not yet checked in) --}}
+                                    @if($appointment->status === 'confirmed' && !$appointment->checked_in_at)
                                         <form action="{{ route('lawyer.appointments.checkIn', $appointment->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-outline-primary" title="Check In Client">
@@ -202,6 +202,17 @@
                                             <button type="submit" class="btn btn-sm btn-outline-warning" title="Cancel Appointment"
                                                     onclick="return confirm('Cancel this appointment?')">
                                                 <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Checked In Actions (confirmed + has checked_in_at) --}}
+                                    @if($appointment->status === 'confirmed' && $appointment->checked_in_at)
+                                        <span class="badge bg-success me-1" style="font-size:0.65rem;"><i class="bi bi-check me-1"></i>Checked In</span>
+                                        <form action="{{ route('lawyer.appointments.start', $appointment->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-info" title="Start Consultation">
+                                                <i class="bi bi-play-fill"></i>
                                             </button>
                                         </form>
                                     @endif

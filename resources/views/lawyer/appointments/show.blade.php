@@ -14,21 +14,29 @@
                 </ol>
             </nav>
             <h1 class="h3 mb-0">Appointment Details</h1>
-        </div>        <div>
+        </div>
+        <div>
             @if($appointment->status === 'pending')
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmModal-{{ $appointment->id }}">                    <i class="bi bi-check-lg me-1"></i> Confirm Appointment
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmModal-{{ $appointment->id }}">
+                    <i class="bi bi-check-lg me-1"></i> Confirm Appointment
                 </button>
 
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#declineModal">
                     <i class="bi bi-x-lg me-1"></i> Decline
                 </button>
             @elseif($appointment->status === 'confirmed')
-                <form action="{{ route('lawyer.appointments.start', $appointment) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-play-fill me-1"></i> Start Consultation
-                    </button>
-                </form>
+                @if($appointment->checked_in_at)
+                    <form action="{{ route('lawyer.appointments.start', $appointment) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-play-fill me-1"></i> Start Consultation
+                        </button>
+                    </form>
+                @else
+                    <span class="badge bg-info fs-6 py-2 px-3">
+                        <i class="bi bi-hourglass-split me-1"></i> Waiting for Check-in
+                    </span>
+                @endif
             @elseif($appointment->status === 'in_progress')
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#completeModal">
                     <i class="bi bi-check-lg me-1"></i> Complete Consultation
@@ -136,6 +144,10 @@
                 <div class="card-body">
                     <form action="{{ route('lawyer.appointments.addNote', $appointment) }}" method="POST">
                         @csrf
+                        <div class="mb-3">
+                            <label class="form-label">Note Title</label>
+                            <input type="text" class="form-control" name="title" required placeholder="Brief title for this note...">
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Note Content</label>
                             <textarea class="form-control" name="content" rows="3" required placeholder="Detailed notes about the consultation..."></textarea>
@@ -316,20 +328,34 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Select documents the client needs to bring:</label>
-                        <div class="card p-2 bg-light border">
+                        <label class="form-label fw-bold">Requirements to bring:</label>
+                        <div class="card p-2 bg-light border" style="max-height: 200px; overflow-y: auto;">
+                            {{-- Standard Requirements --}}
                             <div class="form-check mb-1">
-                                <input class="form-check-input" type="checkbox" name="requirements[]" value="Valid Government ID" checked>
-                                <label class="form-check-label">Valid Government ID</label>
+                                <input class="form-check-input" type="checkbox" name="requirements[]" value="Valid ID" checked>
+                                <label class="form-check-label">Valid ID</label>
                             </div>
                             <div class="form-check mb-1">
-                                <input class="form-check-input" type="checkbox" name="requirements[]" value="Relevant Documents" checked>
-                                <label class="form-check-label">Relevant Documents</label>
+                                <input class="form-check-input" type="checkbox" name="requirements[]" value="Proof of Residency">
+                                <label class="form-check-label">Proof of Residency</label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="requirements[]" value="Timeline of Events" checked>
-                                <label class="form-check-label">Timeline of Events</label>
-                            </div>
+
+                            {{-- AI-detected document checklist --}}
+                            @if($appointment->document_checklist)
+                                @foreach($appointment->document_checklist as $doc)
+                                    @php $val = is_array($doc) ? ($doc['item'] ?? $doc) : $doc; @endphp
+                                    @if($val !== 'Valid ID')
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input" type="checkbox" name="requirements[]" value="{{ $val }}" checked>
+                                            <label class="form-check-label">{{ $val }}</label>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
+                        </div>
+                        <div class="mt-2">
+                            <label class="small text-muted">Add custom requirement:</label>
+                            <input type="text" name="requirements[]" class="form-control form-control-sm" placeholder="E.g., Affidavit of Loss">
                         </div>
                     </div>
 

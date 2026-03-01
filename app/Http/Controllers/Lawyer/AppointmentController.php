@@ -79,7 +79,7 @@ class AppointmentController extends Controller
         ]);
 
         $instructions = $request->input('instructions');
-        $requirements = $request->input('requirements', []); 
+        $requirements = array_filter($request->input('requirements', []));
 
         $noteParts = [];
         if (!empty($requirements)) {
@@ -156,7 +156,7 @@ class AppointmentController extends Controller
         $appointment->clientRecord->entries()->create([
             'appointment_id' => $appointment->id,
             'created_by' => Auth::id(),
-            'entry_type' => 'case_note',
+            'entry_type' => 'note',
             'title' => $validated['title'],
             'content' => $validated['content'],
         ]);

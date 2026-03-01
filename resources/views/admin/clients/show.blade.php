@@ -19,9 +19,9 @@
             <a href="{{ route('admin.clients.print', $clientRecord) }}" target="_blank" class="btn btn-outline-dark me-2">
                 <i class="bi bi-printer me-1"></i> Print Record
             </a>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+            <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
                 <i class="bi bi-plus-lg me-1"></i> Add Note
-            </button>
+            </button> -->
         </div>
     </div>
 
@@ -241,7 +241,7 @@
     </div>
 </div>
 
-<!-- Add Note Modal -->
+<!-- Add Note Modal
 <div class="modal fade" id="addNoteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -278,7 +278,7 @@
             </form>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- Edit Client Modal -->
 <div class="modal fade" id="editClientModal" tabindex="-1">

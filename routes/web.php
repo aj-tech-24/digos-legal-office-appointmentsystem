@@ -69,6 +69,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::post('lawyers/{lawyer}/approve', [AdminLawyerController::class, 'approve'])->name('lawyers.approve');
     Route::post('lawyers/{lawyer}/reject', [AdminLawyerController::class, 'reject'])->name('lawyers.reject');
     Route::post('lawyers/{lawyer}/suspend', [AdminLawyerController::class, 'suspend'])->name('lawyers.suspend');
+    Route::post('lawyers/{lawyer}/unsuspend', [AdminLawyerController::class, 'unsuspend'])->name('lawyers.unsuspend');
 
     // Appointments
     Route::get('appointments', [AdminAppointmentController::class, 'index'])->name('appointments.index');
